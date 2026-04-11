@@ -74,18 +74,6 @@ export const POST = async (req: NextRequest) => {
       },
       { status: 201 },
     );
-    if (!newUser) {
-      return NextResponse.json(
-        { error: "Failed to create account" },
-        { status: 500 },
-      );
-    }
-
-    // Return success response
-    return NextResponse.json(
-      { message: "Account created successfully" },
-      { status: 201 },
-    );
   } catch (error) {
     console.log("Signup error", error);
     return NextResponse.json(

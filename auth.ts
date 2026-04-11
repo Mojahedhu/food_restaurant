@@ -4,13 +4,6 @@ import Credentials from "next-auth/providers/credentials";
 import { client, writeClient } from "@/sanity/lib/client";
 import bcrypt from "bcryptjs";
 
-interface ImageAsset {
-  asset: {
-    _ref: string;
-    _type: "reference";
-  };
-}
-
 const authConfig = {
   providers: [
     Google({
@@ -74,6 +67,12 @@ const authConfig = {
       },
     }),
   ],
+
+  // 🔥 ADD IT HERE
+  session: {
+    strategy: "jwt",
+  },
+
   callbacks: {
     async signIn({ user, account, profile }) {
       if (account?.provider === "google") {
@@ -116,6 +115,7 @@ const authConfig = {
       }
       return true;
     },
+
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;

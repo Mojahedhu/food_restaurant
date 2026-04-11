@@ -7,7 +7,7 @@ const RootLayout = async ({
 }: Readonly<{ children: React.ReactNode }>) => {
   const user = await auth();
 
-  if (user?.user) {
+  if (user?.user?.email) {
     redirect("/");
   }
 
