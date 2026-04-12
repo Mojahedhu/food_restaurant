@@ -2,8 +2,19 @@
   command = "pnpm build"
   publish = ".next"
 
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [build.environment]
   NODE_VERSION = "20"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
+# Cache Next.js + pnpm
+[build.processing]
+  skip_processing = false
+
+
+[[build.cache]]
+  paths = [
+    ".next/cache",
+    "node_modules/.pnpm"
+  ]
