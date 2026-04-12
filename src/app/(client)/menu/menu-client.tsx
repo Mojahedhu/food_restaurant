@@ -113,8 +113,16 @@ const MenuClient = ({
         const countQuery = `count(*[${filters}])`;
 
         const [data, count] = await Promise.all([
-          client.fetch(query, {}, { next: { revalidate: 0 } }),
-          client.fetch(countQuery, {}, { next: { revalidate: 0 } }),
+          client.fetch(
+            query,
+            {},
+            { next: { revalidate: 0 }, cache: "no-store" },
+          ),
+          client.fetch(
+            countQuery,
+            {},
+            { next: { revalidate: 0 }, cache: "no-store" },
+          ),
         ]);
 
         setTotalCount(count);
@@ -172,6 +180,7 @@ const MenuClient = ({
 
   // Infinite scroll observer
   useEffect(() => {
+    if (!loadMoreRef.current) return;
     if (observerRef.current) {
       observerRef.current.disconnect();
     }
@@ -187,16 +196,14 @@ const MenuClient = ({
         }
       },
       {
-        threshold: 0.1,
+        rootMargin: "200px",
+        threshold: 0,
       },
     );
-    if (loadMoreRef.current) {
-      observerRef.current.observe(loadMoreRef.current);
-    }
 
     return () => {
       if (observerRef.current) {
-        observerRef.current.disconnect();
+        observerRef.current?.disconnect();
       }
     };
   }, [loadMore, hasMore, isLoadingMore, isLoading]);
@@ -256,7 +263,7 @@ const MenuClient = ({
         </div>
         {/* Loading indicator for infinite scroll */}
         {hasMore && !isLoading && (
-          <div ref={loadMoreRef} className="py-8 text-center">
+          <div ref={loadMoreRef} className="py-20 text-center">
             {isLoadingMore && (
               <div className="flex items-center justify-center gap-2">
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
