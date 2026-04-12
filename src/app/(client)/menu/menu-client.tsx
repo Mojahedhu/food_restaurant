@@ -201,6 +201,8 @@ const MenuClient = ({
       },
     );
 
+    observerRef.current.observe(loadMoreRef.current);
+
     return () => {
       if (observerRef.current) {
         observerRef.current?.disconnect();
