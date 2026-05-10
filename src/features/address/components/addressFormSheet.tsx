@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -17,36 +17,54 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import { Home, Building, MapPin, Loader2 } from "lucide-react";
 
-import { useAddress } from "../hook/useAddress";
 import { cn } from "@/lib/utils";
+import { Address } from "../../../../types/sanityTypes";
+
+type Mode = "create" | "update";
 
 interface AddressSheetProps {
   open: boolean;
   setOpen: (open: boolean) => void;
+  mode: Mode;
   userId: string;
   addressId?: string;
+  initialData?: Address | null;
+  loading: boolean;
+  onSubmit: (
+    data: Omit<Address, "_id"> | Address,
+  ) => Promise<{ success: boolean }>;
 }
 
 export default function AddressSheet({
   open,
   setOpen,
+  mode,
   userId,
-  addressId,
+  loading,
+  onSubmit,
+  initialData,
 }: AddressSheetProps) {
-  const [type, setType] = useState("home");
-  const { addresses, createAddress, loading } = useAddress(userId);
-  const address = addresses.find((a) => a._id === addressId);
-  const [form, setForm] = useState({
-    label: address?.label || "",
-    street: address?.street || "",
-    apartment: address?.apartment || "",
-    city: address?.city || "",
-    state: address?.state || "",
-    zipCode: address?.zipCode || "",
-    phone: address?.phone || "",
-    instructions: address?.instructions || "",
-    isDefault: address?.isDefault || false,
+  const [type, setType] = useState(initialData?.type || "Home");
+
+  const [form, setForm] = useState<Partial<Address>>({
+    label: initialData?.label || "",
+    street: initialData?.street || "",
+    apartment: initialData?.apartment || "",
+    city: initialData?.city || "",
+    state: initialData?.state || "",
+    zipCode: initialData?.zipCode || "",
+    phone: initialData?.phone || "",
+    instructions: initialData?.instructions || "",
+    isDefault: initialData?.isDefault || false,
   });
+
+  useEffect(() => {
+    if (initialData) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setForm(initialData);
+      setType(initialData.type || "Home");
+    }
+  }, [initialData]);
 
   const handleChange = (key: string, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -54,10 +72,27 @@ export default function AddressSheet({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const result = await createAddress(form, type);
+    if (!userId) return;
+    const result = await onSubmit({
+      ...form,
+      type,
+    });
     if (result.success) {
       setOpen(false);
+      setForm({
+        label: "",
+        street: "",
+        apartment: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        phone: "",
+        instructions: "",
+        isDefault: false,
+      });
+      setType("home");
     }
+    setOpen(false);
   };
 
   return (
@@ -68,10 +103,12 @@ export default function AddressSheet({
       >
         <SheetHeader className="space-y-2 text-center sm:text-left p-0">
           <SheetTitle className="text-lg font-semibold text-foreground">
-            Add New Address
+            {mode === "create" ? "Add New Address" : "Update Address"}
           </SheetTitle>
           <SheetDescription>
-            Add a delivery address for faster checkout
+            {mode === "create"
+              ? "Add a delivery address for faster checkout"
+              : "Update your delivery address"}
           </SheetDescription>
         </SheetHeader>
 
@@ -85,7 +122,7 @@ export default function AddressSheet({
                 className={cn(
                   "flex flex-col items-center justify-center gap-2 rounded-md border-2 p-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-input",
                   type === "home"
-                    ? "border-primary bg-primary/10 border-primary"
+                    ? "border-primary bg-primary/10"
                     : "hover:border-primary/30",
                 )}
                 onClick={() => setType("home")}
@@ -98,7 +135,7 @@ export default function AddressSheet({
                 className={cn(
                   "flex flex-col items-center justify-center gap-2 rounded-md border-2 p-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-input",
                   type === "work"
-                    ? "border-primary bg-primary/10 border-primary"
+                    ? "border-primary bg-primary/10"
                     : "hover:border-primary/30",
                 )}
                 onClick={() => setType("work")}
@@ -111,7 +148,7 @@ export default function AddressSheet({
                 className={cn(
                   "flex flex-col items-center justify-center gap-2 rounded-md border-2 p-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-input",
                   type === "other"
-                    ? "border-primary bg-primary/10 border-primary"
+                    ? "border-primary bg-primary/10"
                     : "hover:border-primary/30",
                 )}
                 onClick={() => setType("other")}
@@ -266,7 +303,9 @@ export default function AddressSheet({
               id="isDefault"
               className="h-4 w-4 rounded border-input text-primary focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               checked={form.isDefault}
-              onCheckedChange={(val) => handleChange("isDefault", val)}
+              onCheckedChange={(val) => {
+                handleChange("isDefault", val);
+              }}
             />
             <Label
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -292,8 +331,10 @@ export default function AddressSheet({
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Saving...
                 </>
-              ) : (
+              ) : mode === "create" ? (
                 "Save Address"
+              ) : (
+                "Update Address"
               )}
             </Button>
           </div>

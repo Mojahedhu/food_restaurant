@@ -45,7 +45,7 @@ const Footer = () => {
   ];
 
   return (
-    <div className="bg-muted border-t border-border font-sans">
+    <footer className="bg-muted border-t border-border font-sans">
       <Container className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:pag-10 px-4 py-12 lg:py-16">
         <div className="space-y-4 sm:col-span-2 lg:col-span-1">
           <Logo />
@@ -155,7 +155,7 @@ const Footer = () => {
           </div>
         </div>
       </Container>
-    </div>
+    </footer>
   );
 };
 

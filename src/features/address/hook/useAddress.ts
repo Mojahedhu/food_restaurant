@@ -7,7 +7,6 @@ import {
   getAddressAction,
   updateAddressAction,
 } from "@/app/actions/address";
-import { AddressRaw } from "../types/type";
 
 type AddressForm = {
   label: string;
@@ -24,9 +23,11 @@ type AddressForm = {
 export const useAddress = (userId?: string) => {
   const [loading, setLoading] = useState(false);
   const store = useAddressStore();
-  console.log(userId);
-  const { addOptimisticAddress, confirmAddress, rollbackAddress } =
-    useAddressStore();
+  const {
+    addAddress: addOptimisticAddress,
+    confirmAddress,
+    rollbackAddress,
+  } = useAddressStore();
 
   const getAddress = async (id: string) => {
     setLoading(true);
@@ -68,11 +69,17 @@ export const useAddress = (userId?: string) => {
       });
       formData.append("type", type);
 
+      // If there is no `isDefault` in the form data, set it to false
+      const hasDefault = store.addresses.some((address) => address.isDefault);
+      if (!hasDefault || store.addresses.length === 0) {
+        formData.set("isDefault", "true");
+      }
+
       // ⚡ Optimistic update
       addOptimisticAddress({
         _id: tempId,
         ...form,
-        type,
+        type: type as "home" | "work" | "other",
         pending: true,
       });
 
@@ -100,19 +107,14 @@ export const useAddress = (userId?: string) => {
   };
 
   // ✏️ UPDATE ADDRESS (OPTIMISTIC)
-  const updateAddress = async (id: string, updatesForm: FormData) => {
+  const updateAddress = async (id: string, updates: Partial<AddressForm>) => {
     const prev = store.addresses.find((a) => a._id === id);
-
     if (!prev) return;
 
     setLoading(true);
 
     try {
       // 🧠 Create a minimal diff (only changed fields)
-      const updates: Partial<AddressForm> = {};
-      Object.entries(updatesForm).forEach(([key, value]) => {
-        updates[key as keyof AddressForm] = value;
-      });
       let isUpdated = false;
 
       for (const key of Object.keys(updates) as (keyof AddressForm)[]) {
@@ -131,10 +133,10 @@ export const useAddress = (userId?: string) => {
       }
 
       // ⚡ OPTIMISTIC UPDATE
-      store.updateOptimisticAddress(id, updates);
+      store.updateAddress(id, updates);
 
       // 🔐 SERVER UPDATE
-      const { success } = await updateAddressAction(id, updatesForm);
+      const { success } = await updateAddressAction(id, updates);
 
       if (success) {
         store.confirmUpdateAddress(id);
@@ -165,11 +167,21 @@ export const useAddress = (userId?: string) => {
     }
 
     setLoading(true);
+
+    // ⚡ Optimistic delete
+    store.deleteAddress(id);
     try {
-      const address = await deleteAddressAction(id, userId!);
-      return address;
+      const { success } = await deleteAddressAction(id, userId!);
+      if (!success) {
+        throw new Error("Delete failed");
+      }
+      toast.success("Address deleted");
     } catch (err) {
       console.error(err || "Failed to delete address");
+
+      // ❌ rollback correctly
+      store.rollbackDeleteAddress(prev);
+
       toast.error("Failed to delete address");
       return null;
     } finally {
@@ -184,5 +196,6 @@ export const useAddress = (userId?: string) => {
     getAddress,
     deleteAddress,
     loading,
+    updateAddress,
   };
 };

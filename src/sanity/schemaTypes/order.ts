@@ -1,4 +1,4 @@
-import { defineField, defineType } from "sanity";
+import { defineType } from "sanity";
 
 export default defineType({
   name: "order",
@@ -255,6 +255,15 @@ export default defineType({
       title: "Stripe Payment Intent",
       description: "Stripe Payment Intent ID",
       readOnly: true,
+    },
+    {
+      name: "isViewed",
+      type: "boolean",
+      title: "Is Viewed",
+      initialValue: false,
+      validation: (rule) => rule.required(),
+      description:
+        "Whether the order has been viewed by the user on the order-success page",
     },
   ],
   preview: {

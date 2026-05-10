@@ -28,35 +28,30 @@ export default defineType({
       validation: (Rule) => Rule.required().min(1).max(5).integer(),
     }),
     defineField({
+      name: "approved",
+      title: "Approved",
+      type: "boolean",
+      initialValue: false,
+    }),
+    defineField({
       name: "comment",
       title: "Comment",
       type: "text",
       rows: 4,
       validation: (Rule) => Rule.required().min(10).max(1000),
     }),
+    // ✅ denormalized counters (fast reads)
     defineField({
-      name: "likes",
-      title: "Likes",
-      type: "array",
-      of: [
-        {
-          type: "reference",
-          to: [{ type: "user" }],
-        },
-      ],
-      description: "Users who liked this review",
+      name: "likesCount",
+      title: "Likes Count",
+      type: "number",
+      initialValue: 0,
     }),
     defineField({
-      name: "dislikes",
-      title: "Dislikes",
-      type: "array",
-      of: [
-        {
-          type: "reference",
-          to: [{ type: "user" }],
-        },
-      ],
-      description: "Users who disliked this review",
+      name: "dislikesCount",
+      title: "Dislikes Count",
+      type: "number",
+      initialValue: 0,
     }),
     defineField({
       name: "createdAt",
@@ -82,9 +77,8 @@ export default defineType({
         title: `${approvedMark} ${userName || "Unknown user"} - ${rating}/5 🌟`,
         description:
           comment?.slice(0, 50) +
-          (comment.length > 60
-            ? "..."
-            : "" + ` • ${new Date(createdAt).toLocaleDateString()}`),
+          (comment.length > 60 ? "..." : "") +
+          ` • ${new Date(createdAt).toLocaleDateString()}`,
       };
     },
   },

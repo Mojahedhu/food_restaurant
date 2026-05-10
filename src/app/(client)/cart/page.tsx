@@ -1,4 +1,3 @@
-import React from "react";
 import auth from "../../../../auth";
 import { client } from "@/sanity/lib/client";
 import { Breadcrumb } from "@/components/common/breadcrumb";

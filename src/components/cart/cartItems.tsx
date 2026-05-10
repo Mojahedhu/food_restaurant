@@ -23,7 +23,6 @@ const CartItems = () => {
   const [showClearDialog, setShowClearDialog] = React.useState(false);
 
   const items = useCartStore((state) => state.items);
-  console.log(items);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);

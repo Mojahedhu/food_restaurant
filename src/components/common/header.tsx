@@ -15,16 +15,12 @@ import SearchModel from "./searchModel";
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [mounted, setMounted] = useState(false);
+
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-  const items = useCartStore((state) => state.items);
-  const totalItems = mounted ? items.length : 0;
+  const { items, _hasHydrated } = useCartStore();
 
-  useEffect(() => {
-    const timer = setTimeout(() => setMounted(true), 0);
-    return clearTimeout(timer);
-  }, []);
+  const totalItems = _hasHydrated ? items.length : 0;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -173,15 +169,11 @@ const Header = () => {
                 <span className="absolute inset-0 bg-primary -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out rounded-full" />
 
                 <div className="relative z-10">
-                  <ShoppingCart
-                    className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors duration-300"
-                    fill="#19B3E3"
-                  />
+                  <ShoppingCart className="w-4 h-4 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
                 </div>
 
                 <p className="text-[10px] font-medium text-foreground group-hover:text-primary-foreground transition-colors duration-300 relative z-10">
-                  (<span className="font-semibold">{totalItems}</span>{" "}
-                  {totalItems === 1 ? "item" : "items"})
+                  (<span className="font-semibold">{totalItems}</span>)
                 </p>
               </button>
             </Link>

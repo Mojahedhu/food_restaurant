@@ -14,6 +14,7 @@ import orderStatus from "./orderStatus";
 import post from "./post";
 import restaurant from "./restaurant";
 import review from "./review";
+import reviewReaction from "./reviewReaction";
 import size from "./size";
 import user from "./user";
 import userRole from "./userRole";
@@ -35,6 +36,7 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     post,
     restaurant,
     review,
+    reviewReaction,
     size,
     user,
     userRole,

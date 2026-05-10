@@ -21,7 +21,7 @@ const FoodCards = ({
   return (
     <div className="group" {...props}>
       {/* Image */}
-      <Link href={`/foods/${food.slug}`}>
+      <Link href={`/food/${food.slug}`}>
         {food?.images && food.images[0] && (
           <div className="relative w-full h-56 overflow-hidden rounded-lg">
             <Image

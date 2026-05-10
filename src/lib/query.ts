@@ -125,6 +125,161 @@ export const FEATURED_FOODS_SEARCH_QUERY = groq`
     }
 `;
 
+/* ==================== Get food by Slug ==================== */
+
+export const GET_FOOD_BY_SLUG_QUERY = groq`
+  *[_type == "food" && slug.current == $slug][0] {
+    _id,
+    name,
+    "slug": slug.current,
+    description,
+    "basePrice": price,
+    images,
+    "preparationTime": PreparationTime,
+    spiceLevel,
+    available,
+    featured,
+     // Dynamic average rating
+   "averageRating": coalesce(
+    math::avg(
+      *[
+        _type == "review" &&
+        food._ref == ^._id &&
+        approved == true
+      ].rating
+    ),
+    0
+    ),
+     "totalReviews": count(
+    *[
+    _type == "review" &&
+    food._ref == ^._id &&
+    approved == true
+    ]
+    ),
+    category->{
+      _id,
+      name,
+      "slug": slug.current
+    },
+    varieties[]->{
+      _id,
+      name,
+    }
+  }
+`;
+
+/* ==================== Get Food by Category query  ==================== */
+
+export const GET_FOOD_BY_CATEGORY_QUERY = groq`
+  *[_type == "food" && category._ref == $categoryId && _id != $excludeFoodId] {
+    _id,
+    name,
+    "slug": slug.current,
+    description,
+    price,
+    images,
+    averageRating,
+    "totalReviews": count(
+    *[
+    _type == "review" &&
+    food._ref == ^._id &&
+    approved == true
+    ]
+    ),
+    category->{
+      _id,
+      name,
+      "slug": slug.current
+    }
+  }
+`;
+
+/**
+ * Get addresses
+ */
+
+export const ADDRESSES_QUERY = groq`*[_type == "address" && user._ref == $userId]{
+      _id,
+      type,
+      label,
+      street,
+      apartment,
+      city,
+      state,
+      zipCode,
+      phone,
+      instructions,
+      isDefault
+     }
+    `;
 // =========================================================
 // STATISTIC QUERY
 // =========================================================
+
+/**
+ * Get all reviews by food id and my reaction
+ */
+
+export const REVIEWS_BY_FOOD_ID_QUERY = groq`
+*[_type == "review" && food._ref == $foodId && approved == true]
+| order(createdAt desc) {
+  _id,
+  rating,
+  comment,
+  likesCount,
+  dislikesCount,
+  "food": food->{
+    _id,
+    name,
+    "slug": slug.current
+  },
+
+  "user": user->{
+    name,
+    image
+  },
+
+ 
+}`;
+
+export const REVIEWS_WITH_REACTIONS_BY_FOOD_ID_QUERY = groq`
+*[_type == "review" && food._ref == $foodId && approved == true]
+| order(createdAt desc) {
+  _id,
+  rating,
+  comment,
+  likesCount,
+  dislikesCount,
+  "food": food->{
+    _id,
+    name,
+    "slug": slug.current
+  },
+  "user": user->{
+    name,
+    image
+  },
+
+  // current user reaction
+  "myReaction": coalesce(
+   *[
+    _type == "reviewReaction" &&
+    review._ref == ^._id &&
+    user._ref == $userId
+  ][0].type,
+  null
+  )
+}
+`;
+
+/**
+ * Count reaction (fallback if needed)
+ */
+
+export const REVIEW_REACTIONS_QUERY_WITH_REVIEW_ID = groq`
+{
+  "likes": count(*[_type == "reviewReaction" && review._ref == $reviewId && type == "like"]),
+  "dislikes": count(*[_type == "reviewReaction" && review._ref == $reviewId && type == "dislike"])
+}
+`;

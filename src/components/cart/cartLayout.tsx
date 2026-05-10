@@ -1,8 +1,5 @@
-import React from "react";
 import CartItems from "./cartItems";
 import CartSummaryWrapper from "./cartSummaryWrapper";
-import { client } from "@/sanity/lib/client";
-import { Address } from "../../../sanity.types";
 
 interface CartLayoutProps {
   isAuthenticated: boolean;
@@ -18,20 +15,6 @@ const CartLayout = async ({
   hasAddresses,
   userId,
 }: CartLayoutProps) => {
-  const address: Address[] = await client.fetch(
-    `*[_type == "address" && user._ref == $userId]{
-  _id,
-  type,
-  street,
-  city,
-  state,
-  isDefault
- }
-`,
-    {
-      userId,
-    },
-  );
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
       <div className="lg:col-span-2">
@@ -45,7 +28,6 @@ const CartLayout = async ({
             userEmail={userEmail}
             hasAddresses={hasAddresses}
             userId={userId}
-            address={address}
           />
         </div>
       </div>

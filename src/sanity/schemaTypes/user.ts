@@ -29,14 +29,62 @@ export default defineType({
     defineField({
       name: "image",
       title: "Profile Image",
-      type: "string",
-      description: "Url of the profile image",
+      type: "object",
+      fields: [
+        defineField({
+          name: "source",
+          title: "Image Source",
+          type: "string",
+          options: {
+            list: [
+              { title: "Upload", value: "asset" },
+              { title: "External URL", value: "url" },
+            ],
+            layout: "radio",
+          },
+          initialValue: "url",
+        }),
+
+        defineField({
+          name: "asset",
+          title: "Uploaded Image",
+          type: "image",
+          hidden: ({ parent }) => parent?.source !== "asset",
+          options: {
+            hotspot: true,
+          },
+        }),
+
+        defineField({
+          name: "url",
+          title: "Image URL",
+          type: "url",
+          hidden: ({ parent }) => parent?.source !== "url",
+        }),
+      ],
     }),
     defineField({
       name: "emailVerified",
       title: "Email Verified",
       type: "datetime",
       description: "Timestamp when the user's email was verified",
+    }),
+    defineField({
+      name: "phoneNumber",
+      title: "Phone Number",
+      type: "string",
+      validation: (Rule) =>
+        Rule.regex(/^[0-9]{10}$/, {
+          name: "phoneNumber",
+        }),
+    }),
+    defineField({
+      name: "bio",
+      title: "Bio",
+      type: "text",
+      rows: 3,
+      validation: (Rule) => Rule.max(200),
+      description: "description about the user",
     }),
     defineField({
       name: "provider",
@@ -56,7 +104,7 @@ export default defineType({
       type: "reference",
       to: [{ type: "userRole" }],
       description:
-        "The role of the user in the application (default to 'User' role",
+        "The role of the user in the application (default to 'User' role)",
       options: {
         filter: `_type == "userRole" && isActive == true`,
       },
@@ -67,18 +115,6 @@ export default defineType({
       type: "datetime",
       readOnly: true,
       initialValue: () => new Date().toISOString(),
-    }),
-    defineField({
-      name: "address",
-      title: "Address",
-      type: "array",
-      of: [
-        {
-          type: "reference",
-          to: [{ type: "address" }],
-        },
-      ],
-      description: "List of addresses associated with the user",
     }),
     defineField({
       name: "walletBalance",

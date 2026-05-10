@@ -94,7 +94,12 @@ const authConfig = {
               _type: "user",
               name: user.name || profile?.name || "User",
               email: user.email,
-              image: user.image || profile?.picture,
+              image: profile?.picture
+                ? {
+                    source: "url",
+                    url: profile.picture,
+                  }
+                : undefined,
               provider: "google",
               role: defaultRole
                 ? {
@@ -127,14 +132,17 @@ const authConfig = {
           `*[_type == "user" && email == $email][0]{
           _id, 
           "role": role->slug.current,
-          "image": image.asset->url 
-          }`,
+          "imageUrl": select(
+            image.source == "url" => image.url,
+            image.source == "asset" => image.asset.asset->url
+          )
+        }`,
           { email: token.email },
         );
         if (sanityUser) {
           token.id = sanityUser._id;
           token.role = sanityUser.role;
-          token.image = sanityUser.image;
+          token.image = sanityUser.imageUrl;
         }
       }
       return token;
@@ -142,7 +150,6 @@ const authConfig = {
     async session({ session, token }) {
       session.user.id = token.id as string;
       session.user.role = token.role as string;
-
       return session;
     },
   },

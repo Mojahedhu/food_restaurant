@@ -32,23 +32,37 @@ export type Review = {
     [internalGroqTypeReferenceTo]?: "user";
   };
   rating?: number;
+  approved?: boolean;
   comment?: string;
-  likes?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "user";
-  }>;
-  dislikes?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "user";
-  }>;
+  // denormalized counters
+  likesCount: number;
+  dislikesCount: number;
   createdAt?: string;
 };
+
+export type ReactionType = "like" | "dislike";
+
+export interface ReviewReaction {
+  _id: string;
+  _type: "reviewReaction";
+  _createdAt?: string;
+  _updatedAt?: string;
+  _rev?: string;
+
+  review: {
+    _type: "reference";
+    _ref: string;
+  };
+
+  user: {
+    _type: "reference";
+    _ref: string;
+  };
+
+  type: ReactionType;
+
+  createdAt: string;
+}
 
 export type Restaurant = {
   _id: string;
@@ -308,6 +322,7 @@ export type Order = {
   notes?: string;
   StripeSessionId?: string;
   stripePaymentIntent?: string;
+  isViewed?: boolean;
 };
 
 export type OrderStatus = {
@@ -566,6 +581,20 @@ export type Address = {
   isDefault?: boolean;
 };
 
+export type UserImage = {
+  source?: "asset" | "url";
+
+  asset?: {
+    _type: "image";
+    asset: {
+      _ref: string;
+      _type: "reference";
+    };
+  };
+
+  url?: string;
+};
+
 export type User = {
   _id: string;
   _type: "user";
@@ -575,8 +604,10 @@ export type User = {
   name?: string;
   email?: string;
   password?: string;
-  image?: string;
+  image?: UserImage;
+  bio?: string;
   emailVerified?: string;
+  phoneNumber?: string;
   provider?: "credentials" | "google";
   role?: {
     _ref: string;
@@ -584,14 +615,9 @@ export type User = {
     _weak?: boolean;
     [internalGroqTypeReferenceTo]?: "userRole";
   };
+
   createdAt?: string;
-  address?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "address";
-  }>;
+
   walletBalance?: number;
 };
 

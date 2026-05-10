@@ -4,8 +4,9 @@
 import { client } from "@/sanity/lib/client";
 import auth from "../../../auth";
 import { AddressRaw } from "@/features/address/types/type";
+import { Address } from "../../../types/sanityTypes";
 
-export async function createAddressAction(formData: FormData) {
+export async function createAddressAction(formData: Omit<Address, "_id">) {
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -15,16 +16,16 @@ export async function createAddressAction(formData: FormData) {
   const userId = session.user.id;
 
   const data = {
-    type: formData.get("type"),
-    label: formData.get("label"),
-    street: formData.get("street"),
-    apartment: formData.get("apartment"),
-    city: formData.get("city"),
-    state: formData.get("state"),
-    zipCode: formData.get("zipCode"),
-    phone: formData.get("phone"),
-    instructions: formData.get("instructions"),
-    isDefault: formData.get("isDefault") === "on",
+    type: formData.type,
+    label: formData.label,
+    street: formData.street,
+    apartment: formData.apartment,
+    city: formData.city,
+    state: formData.state,
+    zipCode: formData.zipCode,
+    phone: formData.phone,
+    instructions: formData.instructions,
+    isDefault: formData.isDefault === true,
   };
 
   const transaction = client.transaction();
@@ -75,48 +76,55 @@ export async function getAddressAction(id: string) {
   return address;
 }
 
-export async function updateAddressAction(id: string, formData: FormData) {
+export async function updateAddressAction(
+  id: string,
+  formData: Partial<Address>,
+) {
   const session = await auth();
 
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
 
-  const updates: Partial<AddressRaw> = {};
-  Object.entries(formData).forEach(([key, value]) => {
-    if (value !== null && value !== undefined) {
-      updates[key as keyof AddressRaw] = value;
-    }
-  });
+  const updates: Partial<AddressRaw> = {
+    type: formData.type,
+    label: formData.label,
+    street: formData.street,
+    apartment: formData.apartment,
+    city: formData.city,
+    state: formData.state,
+    zipCode: formData.zipCode,
+    phone: formData.phone,
+    instructions: formData.instructions,
+    isDefault: formData.isDefault,
+  };
 
   const transaction = client.transaction();
 
   // 🧠 If updating to default → unset others
-  if (updates.isDefault) {
-    const existingDefaults = await client.fetch(
-      `*[_type == "address" && user._ref == $userId && isDefault == true]._id`,
-      { userId },
+  if (updates.isDefault === true) {
+    transaction.patch(
+      {
+        query: `*[_type == "address" && user._ref == $userId && _id != $id]`,
+        params: { userId, id },
+      },
+      { set: { isDefault: false } },
     );
-
-    existingDefaults.forEach((defId: string) => {
-      if (defId !== id) {
-        transaction.patch(defId, {
-          set: { isDefault: false },
-        });
-      }
-    });
   }
 
   // ✅ Update address
   transaction.patch(id, {
     set: updates,
   });
+  try {
+    await transaction.commit();
 
-  await transaction.commit();
-
-  return { success: true };
+    return { success: true, addressId: id };
+  } catch (error) {
+    console.error(error);
+    return { success: false, error };
+  }
 }
-
 export async function deleteAddressAction(id: string, userId: string) {
   const transaction = client.transaction();
 
@@ -129,15 +137,13 @@ export async function deleteAddressAction(id: string, userId: string) {
 
   // 3- If deleted was default → assign new default
   if (address.isDefault) {
-    const nextAddress = await client.fetch(
-      `*[_type == "address" && user._ref == $userId && _id != $id][0]._id`,
-      { userId, id },
+    transaction.patch(
+      {
+        query: `*[_type == "address" && user._ref == $userId][0]`,
+        params: { userId },
+      },
+      { set: { isDefault: true } },
     );
-    if (nextAddress) {
-      transaction.patch(nextAddress, {
-        set: { isDefault: true },
-      });
-    }
   }
 
   await transaction.commit();

@@ -7,7 +7,7 @@ import {
   TrolleyIcon,
   UsersIcon,
 } from "@sanity/icons";
-import { MapIcon, UserIcon } from "lucide-react";
+import { CircleCheck, MapIcon, Option, UserIcon } from "lucide-react";
 import type { StructureResolver } from "sanity/structure";
 
 // https://www.sanity.io/docs/structure-builder-cheat-sheet
@@ -291,6 +291,63 @@ export const structure: StructureResolver = (S) =>
                       },
                     ]),
                 ),
+
+              S.listItem()
+                .title("User Roles")
+                .icon(UserIcon)
+                .schemaType("userRole")
+                .child(
+                  S.documentTypeList("userRole")
+                    .title("All User Roles")
+                    .defaultOrdering([
+                      {
+                        field: "createdAt",
+                        direction: "desc",
+                      },
+                    ]),
+                ),
+            ]),
+        ),
+
+      S.divider(),
+
+      // Review Management
+
+      S.listItem()
+        .title("Review Management")
+        .icon(DocumentTextIcon)
+        .child(
+          S.list()
+            .title("Reviews")
+            .items([
+              S.listItem()
+                .title("Reviews")
+                .icon(DocumentTextIcon)
+                .schemaType("review")
+                .child(
+                  S.documentTypeList("review")
+                    .title("Reviews")
+                    .defaultOrdering([
+                      {
+                        field: "createdAt",
+                        direction: "desc",
+                      },
+                    ]),
+                ),
+              S.listItem()
+                .title("Review Reactions")
+                .icon(DocumentTextIcon)
+                .schemaType("reviewReaction")
+                .child(
+                  S.documentTypeList("reviewReaction")
+                    .title("Review Reactions")
+                    .defaultOrdering([
+                      {
+                        field: "createdAt",
+                        direction: "desc",
+                      },
+                    ]),
+                ),
             ]),
         ),
 
@@ -371,6 +428,31 @@ export const structure: StructureResolver = (S) =>
                     .defaultOrdering([
                       {
                         field: "city",
+                        direction: "asc",
+                      },
+                    ]),
+                ),
+            ]),
+        ),
+
+      // Order Status
+      S.listItem()
+        .title("Order Status Management")
+        .icon(CircleCheck)
+        .child(
+          S.list()
+            .title("Order Status")
+            .items([
+              S.listItem()
+                .title("All Order Status")
+                .icon(CircleCheck)
+                .schemaType("orderStatus")
+                .child(
+                  S.documentTypeList("orderStatus")
+                    .title("All Order Status")
+                    .defaultOrdering([
+                      {
+                        field: "order",
                         direction: "asc",
                       },
                     ]),
