@@ -135,6 +135,9 @@ const CheckoutClientPage = ({
         throw new Error("Invalid server response");
       }
 
+      console.log("Status:", res.status);
+      console.log("Checkout response:", data);
+
       if (!res.ok) {
         toast.error(data?.message || "Checkout failed");
         throw new Error(data?.message || "Checkout failed");
@@ -159,7 +162,7 @@ const CheckoutClientPage = ({
       window.location.href = data.url;
     } catch (error) {
       console.error(error);
-      toast.error("Failed to place order: " + error);
+      toast.error("Checkout API Error: " + error);
     } finally {
       await delay(2000);
       setLoading(false);
