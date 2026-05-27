@@ -126,11 +126,23 @@ const CheckoutClientPage = ({
         }),
       });
 
-      const data = await res.json();
+    let data;
 
-      if (!data.url) {
-        toast.error("Failed to place order: " + data.message);
-        throw new Error("Failed to place order: " + data.message);
+      try {
+        data = await res.json();
+      } catch {
+        toast.error("Invalid server response");
+        throw new Error("Invalid server response");
+      }
+
+      if (!res.ok) {
+        toast.error(data?.message || "Checkout failed");
+        throw new Error(data?.message || "Checkout failed");
+      }
+
+      if (!data?.url) {
+        toast.error("Failed to place order: Missing checkout URL");
+        throw new Error("Failed to place order: Missing checkout URL");
       }
       // Step 1: UI feedback
       setOrderLoading("connecting");
