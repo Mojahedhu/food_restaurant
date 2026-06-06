@@ -74,6 +74,7 @@ export function useToggleReaction({ reviewId }: useToggleReactionOptions) {
             mutationId,
             optimisticReaction,
             startedAt: Date.now(),
+            reactionConfirmed: false,
           },
         },
       });

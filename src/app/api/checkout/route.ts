@@ -1,8 +1,8 @@
-import { nanoid } from "nanoid";
 import { client as adminClient } from "@/sanity/lib/client";
 import { CartItem } from "../../../stores/cartStore";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
+import { nanoid } from "zod/mini";
 
 export async function POST(request: Request) {
   console.log("STRIPE SECRET KEY:", process.env.STRIPE_SECRET_KEY);
