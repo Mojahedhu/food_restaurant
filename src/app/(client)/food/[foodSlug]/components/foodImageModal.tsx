@@ -18,6 +18,9 @@ const FoodImageModal = ({
   foodName,
 }: FoodImageModalProps) => {
   const [mainImageIndex, setMainImageIndex] = useState(currentIndex);
+  console.log(mainImageIndex);
+  console.log(urlFor(images[mainImageIndex]).url());
+  console.log(images);
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
       <button
@@ -44,6 +47,7 @@ const FoodImageModal = ({
       <div className="relative w-full h-full flex items-center justify-center p-4 lg:p-8">
         <div className="relative min-w-md  max-w-5xl max-h-full">
           <Image
+            key={urlFor(images[mainImageIndex]).url()}
             src={urlFor(images[mainImageIndex]).url()}
             alt={`${foodName} ${mainImageIndex + 1}`}
             width={800}
