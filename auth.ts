@@ -4,6 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import { client, writeClient } from "@/sanity/lib/client";
 import bcrypt from "bcryptjs";
 
+console.log("NEXTAUTH_URL =", process.env.NEXTAUTH_URL);
+
 const authConfig = {
   providers: [
     Google({

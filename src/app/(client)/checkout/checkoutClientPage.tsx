@@ -127,30 +127,11 @@ const CheckoutClientPage = ({
         }),
       });
 
-      // const data = await res.json();
+      const data = await res.json();
 
-      // if (!data.url) {
-      //   toast.error("Failed to place order: " + data.message);
-      //   throw new Error("Failed to place order: " + data.message);
-      // }
-
-      let data;
-
-      try {
-        data = await res.json();
-      } catch {
-        toast.error("Invalid server response");
-        throw new Error("Invalid server response");
-      }
-
-      if (!res.ok) {
-        toast.error(data?.message || "Checkout failed");
-        throw new Error(data?.message || "Checkout failed");
-      }
-
-      if (!data?.url) {
-        toast.error("Failed to place order: Missing checkout URL");
-        throw new Error("Failed to place order: Missing checkout URL");
+      if (!data.url) {
+        toast.error("Failed to place order: " + data.message);
+        throw new Error("Failed to place order: " + data.message);
       }
       // Step 1: UI feedback
       setOrderLoading("connecting");
@@ -168,7 +149,7 @@ const CheckoutClientPage = ({
       window.location.href = data.url;
     } catch (error) {
       console.error(error);
-      toast.error("Failed to place order: " + error);
+      toast.error("Checkout API Error: " + error);
     } finally {
       await delay(2000);
       setLoading(false);
