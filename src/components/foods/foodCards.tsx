@@ -30,6 +30,7 @@ const FoodCards = ({
               width={500}
               height={300}
               className="w-full h-full object-cover group-hover:scale-110 hover-effect"
+              loading="eager"
             />
           </div>
         )}

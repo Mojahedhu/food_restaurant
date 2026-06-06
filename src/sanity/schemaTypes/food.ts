@@ -1,4 +1,4 @@
-import { defineField, defineType, validation } from "sanity";
+import { defineField, defineType } from "sanity";
 
 export default defineType({
   name: "food",
@@ -140,6 +140,31 @@ export default defineType({
       type: "boolean",
       initialValue: false,
     }),
+    defineField({
+   name:"ratingCount",
+   type:"number",
+   initialValue:0,
+   validation: (Rule) => Rule.required().min(0),
+}),
+
+defineField({
+   name:"ratingSum",
+   type:"number",
+   initialValue:0,
+   validation: (Rule) => Rule.required().min(0),
+}),
+
+defineField({
+   name:"weightedRating",
+   type:"number",
+   initialValue:0,
+   validation: (Rule) => Rule.required().min(0),
+}),
+defineField({
+  name: "ratingAverage",
+  type: "number",
+  initialValue: 0,
+}),
     defineField({
       name: "order",
       title: "Display Order",

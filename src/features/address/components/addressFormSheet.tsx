@@ -70,7 +70,7 @@ export default function AddressSheet({
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     if (!userId) return;
     const result = await onSubmit({

@@ -2,7 +2,8 @@
  * Extended types for GROQ query results
  * These types extend the base Sanity types with resolve
  */
-import { SanityAsset } from "@sanity/image-url/lib/types/types";
+
+import { SanityAsset } from "@sanity/image-url";
 import type {
   Food as BaseFood,
   Category as BaseCategory,
@@ -39,7 +40,13 @@ export interface FoodWithCategory extends Omit<
  */
 export interface FoodWithDetails extends Omit<
   BaseFood,
-  "category" | "varieties" | "slug" | "averageRating" | "totalReviews"
+  | "category"
+  | "varieties"
+  | "slug"
+  | "averageRating"
+  | "totalReviews"
+  | "sizes"
+  | "ingredients"
 > {
   slug?: string;
   category?: {
@@ -51,6 +58,17 @@ export interface FoodWithDetails extends Omit<
     _id: string;
     name?: string;
   }> | null;
+  sizes?: {
+    _key: string;
+    size: {
+      _id: string;
+      name?: string;
+    };
+  }[];
+  ingredients?: {
+    _id: string;
+    name?: string;
+  }[];
   averageRating?: number | null;
   totalReviews?: number | null;
   basePrice?: number | null;
@@ -302,71 +320,206 @@ export type User = {
  * Review and ReviewReaction type
  */
 
-export type Review = {
-  _id: string;
-  _type: "review";
-  _createdAt: string;
-  _updatedAt: string;
-  _rev: string;
-  food?: {
-    _ref: string;
-    _type: "reference";
-  };
-  user?: {
-    name: string;
-    image?: UserImage;
-  };
-  rating?: number;
-  approved?: boolean;
-  comment?: string;
-  // denormalized counters
-  likesCount: number;
-  dislikesCount: number;
-  createdAt?: string;
+export type SanityReference = {
+  _ref: string;
+  _type: string;
 };
 
-export interface ReviewReaction {
-  _id: string;
-  _type: "reviewReaction";
-  _createdAt?: string;
-  _updatedAt?: string;
-  _rev?: string;
+/**
+ * =========================================================
+ * Review static part
+ * =========================================================
+ */
 
-  review: {
-    _type: "reference";
-    _ref: string;
-  };
+export interface ReviewStatic {
+  _type: "review";
+  _rev: string;
+  _updatedAt: string;
+
+  food: SanityReference;
+  foodName: string;
+
+  _id: string;
 
   user: {
-    _type: "reference";
-    _ref: string;
+    _id: string;
+    name: string;
+    image: UserImage;
   };
-
-  type: ReactionType;
-
-  createdAt: string;
-}
-
-// ReviewsWithReactionsByFoodIdQueryResult
-
-export interface ReviewsWithReactionsByFoodIdQueryResult {
-  _id: string;
 
   rating: number;
   comment: string;
+  approved: boolean;
+
+  _createdAt: string;
+}
+
+/**
+ * =========================================================
+ * Review metric part
+ * =========================================================
+ */
+
+export interface ReviewMetricsProjection {
+  reviewId: string;
 
   likesCount: number;
   dislikesCount: number;
-  food: {
-    _id: string;
-    name: string;
-    slug: string;
-  };
+}
+
+export type ReviewMetrics = ReviewMetricsProjection;
+
+/**
+ * =========================================================
+ * Review reaction projection
+ * =========================================================
+ */
+
+export interface ReviewReactionProjection {
+  reviewId: string;
+  confirmedReaction: ReactionType | null;
+}
+
+/**
+ * =========================================================
+ * Raw review document from Sanity
+ * =========================================================
+ */
+
+export type SanityReview = {
+  _type: "review";
+  _rev: string;
+  _updatedAt: string;
+
+  _id: string;
 
   user: {
+    _id: string;
     name: string;
-    image?: string;
+    image: UserImage;
   };
 
-  myReaction: ReactionType | null;
+  rating?: number;
+  comment?: string;
+  approved?: boolean;
+
+  _createdAt: string;
+
+  food: SanityReference;
+  foodName: string;
+};
+
+/**
+ * =========================================================
+ * Raw reaction document from Sanity
+ * =========================================================
+ */
+
+export interface SanityReviewReaction {
+  _id: string;
+  _type: "reviewReaction";
+
+  type: ReactionType | null;
+
+  mutationId: string;
+
+  review: SanityReference;
+  food: SanityReference;
+  user: SanityReference;
+
+  _createdAt?: string;
+  _updatedAt?: string;
+}
+
+/**
+ * =========================================================
+ * Optimistic mutation lifecycle
+ * =========================================================
+ */
+
+export interface PendingReactionMutation {
+  mutationId: string;
+
+  optimisticReaction: ReactionType | null;
+
+  startedAt: number;
+
+  reactionConfirmed: boolean;
+}
+
+/**
+ * =========================================================
+ * Frontend projection model
+ * =========================================================
+ */
+
+export interface ReviewView {
+  review: SanityReview;
+
+  metrics: ReviewMetrics;
+
+  /**
+   * Last confirmed server reaction
+   */
+  confirmedReaction: ReactionType | null;
+
+  /**
+   * Active optimistic mutation
+   */
+  pendingMutations: PendingReactionMutation[];
+
+  /**
+   * Last synchronized
+   */
+}
+
+/**
+ * =========================================================
+ * Pending operations (mutations in flight)
+ * =========================================================
+ */
+
+export interface PendingReviewOperation {
+  operationId: string;
+
+  type: "create" | "update" | "delete";
+
+  snapshot?: ReviewView;
+
+  startedAt: number;
+}
+
+/**
+ * =========================================================
+ * Normalized reducer state
+ * =========================================================
+ */
+
+export interface ReviewState {
+  reviews: Record<string, ReviewView>;
+
+  /**
+   * Operations in flight (create/update/delete)
+   */
+  pendingReviewOperations: Record<string, PendingReviewOperation>;
+}
+
+/**
+ * =========================================================
+ * UI selector result
+ * =========================================================
+ */
+
+export interface ReviewDisplayState {
+  review: SanityReview;
+
+  likesCount: number;
+  dislikesCount: number;
+
+  activeReaction: ReactionType | null;
+
+  isLiked: boolean;
+  isDisliked: boolean;
+
+  pending: boolean;
 }

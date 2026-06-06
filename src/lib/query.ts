@@ -138,6 +138,17 @@ export const GET_FOOD_BY_SLUG_QUERY = groq`
     "preparationTime": PreparationTime,
     spiceLevel,
     available,
+    "ingredients":ingredients[]->{
+      name,
+      _id,
+    },
+    "sizes":sizes[]{
+      _key,
+      "size":size->{
+        name,
+        _id,
+      },
+    },
     featured,
      // Dynamic average rating
    "averageRating": coalesce(
@@ -220,56 +231,45 @@ export const ADDRESSES_QUERY = groq`*[_type == "address" && user._ref == $userId
 /**
  * Get all reviews by food id and my reaction
  */
-
-export const REVIEWS_BY_FOOD_ID_QUERY = groq`
+export const REVIEWS_STATIC_BY_FOOD_ID_QUERY = groq`
 *[_type == "review" && food._ref == $foodId && approved == true]
 | order(createdAt desc) {
   _id,
+  _type,
+  _rev,
+  _createdAt,
+  _updatedAt,
+
   rating,
   comment,
-  likesCount,
-  dislikesCount,
-  "food": food->{
-    _id,
-    name,
-    "slug": slug.current
-  },
-
+  approved,
+  
+  food,
+  "foodName": food->name,
   "user": user->{
+    _id,
     name,
     image
   },
-
- 
 }`;
 
-export const REVIEWS_WITH_REACTIONS_BY_FOOD_ID_QUERY = groq`
-*[_type == "review" && food._ref == $foodId && approved == true]
+export const REVIEWS_METRIC_BY_FOOD_ID_QUERY = groq`
+*[_type == "reviewMetrics" && food._ref == $foodId]
 | order(createdAt desc) {
-  _id,
-  rating,
-  comment,
+
+  "reviewId": review._ref,
+
   likesCount,
   dislikesCount,
-  "food": food->{
-    _id,
-    name,
-    "slug": slug.current
-  },
-  "user": user->{
-    name,
-    image
-  },
+}`;
 
-  // current user reaction
-  "myReaction": coalesce(
-   *[
-    _type == "reviewReaction" &&
-    review._ref == ^._id &&
-    user._ref == $userId
-  ][0].type,
-  null
-  )
+export const MY_REVIEW_REACTION_QUERY = groq`
+*[_type == "reviewReaction" 
+  && user._ref == $userId 
+  && food._ref == $foodId
+  ]{
+  "reviewId": review._ref,
+  "confirmedReaction":type ,
 }
 `;
 
@@ -283,3 +283,23 @@ export const REVIEW_REACTIONS_QUERY_WITH_REVIEW_ID = groq`
   "dislikes": count(*[_type == "reviewReaction" && review._ref == $reviewId && type == "dislike"])
 }
 `;
+
+/**
+ * =================================================================
+ * LIKE & DISLIKE COUNT QUERY
+ * =================================================================
+ */
+
+export const LIKES_COUNT_QUERY = groq`count(
+    *[
+      _type == "reviewReaction" &&
+      review._ref == $reviewId &&
+      type == "like"
+    ])`;
+
+export const DISLIKES_COUNT_QUERY = groq`count(
+    *[
+      _type == "reviewReaction" &&
+      review._ref == $reviewId &&
+      type == "dislike"
+    ])`;

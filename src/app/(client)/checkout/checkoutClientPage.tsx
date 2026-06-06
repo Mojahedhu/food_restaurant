@@ -14,7 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useCartStore } from "../../../../stores/cartStore";
+import { useCartStore } from "../../../stores/cartStore";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,7 @@ const CheckoutClientPage = ({
   delete cleanedAddress?.isDefault;
   const isReady = _hasHydrated && mounted;
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -126,11 +127,30 @@ const CheckoutClientPage = ({
         }),
       });
 
-      const data = await res.json();
+      // const data = await res.json();
 
-      if (!data.url) {
-        toast.error("Failed to place order: " + data.message);
-        throw new Error("Failed to place order: " + data.message);
+      // if (!data.url) {
+      //   toast.error("Failed to place order: " + data.message);
+      //   throw new Error("Failed to place order: " + data.message);
+      // }
+
+      let data;
+
+      try {
+        data = await res.json();
+      } catch {
+        toast.error("Invalid server response");
+        throw new Error("Invalid server response");
+      }
+
+      if (!res.ok) {
+        toast.error(data?.message || "Checkout failed");
+        throw new Error(data?.message || "Checkout failed");
+      }
+
+      if (!data?.url) {
+        toast.error("Failed to place order: Missing checkout URL");
+        throw new Error("Failed to place order: Missing checkout URL");
       }
       // Step 1: UI feedback
       setOrderLoading("connecting");
@@ -144,6 +164,7 @@ const CheckoutClientPage = ({
 
       // Step 3: Redirect (LAST STEP)
       // 3. Redirect to Stripe or Order Detail page
+      // eslint-disable-next-line react-hooks/immutability
       window.location.href = data.url;
     } catch (error) {
       console.error(error);

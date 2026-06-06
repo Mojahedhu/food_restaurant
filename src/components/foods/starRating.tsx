@@ -1,3 +1,5 @@
+"use client";
+
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,60 +30,54 @@ export const StarRating = ({
     lg: "text-base",
   } as const;
 
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
-
   return (
     <div className={cn("flex items-center gap-1", className)}>
       <div className="flex items-center">
         {Array.from({ length: maxRating }).map((_, index) => {
-          const isFilled = index < fullStars;
-          const isHalf = index === fullStars && hasHalfStar;
-          const isEmpty = index >= fullStars + (hasHalfStar ? 1 : 0);
+          const fillPercentage = Math.max(
+            0,
+            Math.min(100, (rating - index) * 100),
+          );
 
           return (
             <div key={index} className="relative">
-              {/* Background star (gray) */}
-              {!isFilled && !isHalf && isEmpty && (
+              {/* Gray background */}
+              <Star
+                className={cn(
+                  sizeClasses[size],
+                  "text-gray-600 dark:text-gray-600",
+                )}
+              />
+
+              {/* Yellow fill */}
+              <div
+                className="absolute inset-0 overflow-hidden"
+                style={{
+                  width: `${fillPercentage}%`,
+                }}
+              >
                 <Star
                   className={cn(
                     sizeClasses[size],
-                    "text-gray-500 dark:text-gray-700",
+                    "fill-yellow-500 text-yellow-500",
                   )}
                 />
-              )}
-              {/* Filled star */}
-              {(isFilled || isHalf) && (
-                <div
-                  className="absolute inset-0 overflow-hidden"
-                  style={{
-                    width: isHalf ? "50%" : "100%",
-                  }}
-                >
-                  <Star
-                    className={cn(
-                      sizeClasses[size],
-                      "text-yellow-500 fill-yellow-500",
-                    )}
-                  />
-                </div>
-              )}
+              </div>
             </div>
           );
         })}
-        {showValue && (
-          <span>
-            <span
-              className={cn(
-                "text-muted-foreground font-medium",
-                textSizeClasses[size],
-              )}
-            >
-              {rating.toFixed(1)}
-            </span>
-          </span>
-        )}
       </div>
+
+      {showValue && (
+        <span
+          className={cn(
+            "text-muted-foreground font-medium",
+            textSizeClasses[size],
+          )}
+        >
+          ({rating.toFixed(1)})
+        </span>
+      )}
     </div>
   );
 };

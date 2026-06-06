@@ -7,7 +7,7 @@ import {
   TrolleyIcon,
   UsersIcon,
 } from "@sanity/icons";
-import { CircleCheck, MapIcon, Option, UserIcon } from "lucide-react";
+import { CircleCheck, MapIcon, UserIcon } from "lucide-react";
 import type { StructureResolver } from "sanity/structure";
 
 // https://www.sanity.io/docs/structure-builder-cheat-sheet
@@ -329,7 +329,7 @@ export const structure: StructureResolver = (S) =>
                     .title("Reviews")
                     .defaultOrdering([
                       {
-                        field: "createdAt",
+                        field: "_createdAt",
                         direction: "desc",
                       },
                     ]),
@@ -343,7 +343,21 @@ export const structure: StructureResolver = (S) =>
                     .title("Review Reactions")
                     .defaultOrdering([
                       {
-                        field: "createdAt",
+                        field: "_createdAt",
+                        direction: "desc",
+                      },
+                    ]),
+                ),
+              S.listItem()
+                .title("Review Metrics")
+                .icon(DocumentTextIcon)
+                .schemaType("reviewMetrics")
+                .child(
+                  S.documentTypeList("reviewMetrics")
+                    .title("Review Metrics")
+                    .defaultOrdering([
+                      {
+                        field: "_createdAt",
                         direction: "desc",
                       },
                     ]),

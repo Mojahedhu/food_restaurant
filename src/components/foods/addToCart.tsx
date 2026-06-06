@@ -3,7 +3,7 @@ import { Check, ShoppingCart } from "lucide-react";
 import { FoodWithDetails } from "../../../types/sanityTypes";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { useCartStore } from "../../../stores/cartStore";
+import { useCartStore } from "../../stores/cartStore";
 import { urlFor } from "@/sanity/lib/image";
 import { toast } from "sonner";
 

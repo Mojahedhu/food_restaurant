@@ -40,26 +40,42 @@ export default defineType({
       rows: 4,
       validation: (Rule) => Rule.required().min(10).max(1000),
     }),
+    /**
+     * =========================================================
+     * Authoritative aggregate counters
+     * =========================================================
+     */
+
     // ✅ denormalized counters (fast reads)
-    defineField({
-      name: "likesCount",
-      title: "Likes Count",
-      type: "number",
-      initialValue: 0,
-    }),
-    defineField({
-      name: "dislikesCount",
-      title: "Dislikes Count",
-      type: "number",
-      initialValue: 0,
-    }),
-    defineField({
-      name: "createdAt",
-      title: "Created At",
-      type: "datetime",
-      initialValue: () => new Date().toISOString(),
-      readOnly: true,
-    }),
+    // defineField({
+    //   name: "likesCount",
+    //   title: "Likes Count",
+    //   type: "number",
+    //   initialValue: 0,
+    //   validation: (rule) => rule.min(0),
+    // }),
+    // defineField({
+    //   name: "dislikesCount",
+    //   title: "Dislikes Count",
+    //   type: "number",
+    //   initialValue: 0,
+    //   validation: (rule) => rule.min(0),
+    // }),
+
+    /**
+     * =========================================================
+     * Deterministic realtime reconciliation
+     * =========================================================
+     */
+
+    // defineField({
+    //   name: "revision",
+    //   title: "Revision",
+    //   type: "number",
+    //   initialValue: 0,
+    //   readOnly: true,
+    //   validation: (Rule) => Rule.min(0),
+    // }),
   ],
   preview: {
     select: {
@@ -68,17 +84,39 @@ export default defineType({
       rating: "rating",
       comment: "comment",
       approved: "approved",
-      createdAt: "createdAt",
+      // likesCount: "likesCount",
+      // dislikesCount: "dislikesCount",
+      createdAt: "_createdAt",
     },
-    prepare: ({ userName, foodName, rating, comment, approved, createdAt }) => {
+    prepare: ({
+      userName,
+      foodName,
+      rating,
+      comment,
+      approved,
+      // likesCount,
+      // dislikesCount,
+      createdAt,
+    }) => {
       const approvedMark = approved ? "💹" : "⌛";
+      const shortComment = comment
+        ? comment.slice(0, 50) + (comment.length > 60 ? "..." : "")
+        : "No comment";
+
+      const formattedDate = createdAt
+        ? new Date(createdAt).toLocaleDateString()
+        : "Unknown date";
 
       return {
         title: `${approvedMark} ${userName || "Unknown user"} - ${rating}/5 🌟`,
-        description:
-          comment?.slice(0, 50) +
-          (comment.length > 60 ? "..." : "") +
-          ` • ${new Date(createdAt).toLocaleDateString()}`,
+        description: [
+          foodName,
+          // `👍 ${likesCount ?? 0}`,
+          // `👎 ${dislikesCount ?? 0}`,
+          `${shortComment} • ${formattedDate}`,
+        ]
+          .filter(Boolean)
+          .join(" • "),
       };
     },
   },
@@ -86,12 +124,17 @@ export default defineType({
     {
       title: "Created Date (Newest First)",
       name: "createdDesc",
-      by: [{ field: "createdAt", direction: "desc" }],
+      by: [{ field: "_createdAt", direction: "desc" }],
     },
     {
       title: "Rating (Highest First)",
       name: "ratingDesc",
       by: [{ field: "rating", direction: "desc" }],
+    },
+    {
+      title: "Most Liked",
+      name: "likesDesc",
+      by: [{ field: "likesCount", direction: "desc" }],
     },
   ],
 });
