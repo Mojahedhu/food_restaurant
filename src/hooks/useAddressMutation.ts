@@ -2,7 +2,7 @@ import {
   createAddressAction,
   deleteAddressAction,
   updateAddressAction,
-} from "@/app/actions/address";
+} from "@/actions/address";
 import { fetcher } from "@/lib/fetcher";
 
 import useSWR from "swr";
