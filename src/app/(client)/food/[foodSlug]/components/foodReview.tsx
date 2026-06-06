@@ -78,13 +78,13 @@ const FoodReview = ({ foodId, userId }: FoodReviewProps) => {
                 displayList.map((view) => {
                   return (
                     <div key={view.review._id}>
-                      <ReviewCard
+                      {/* <ReviewCard
                         view={view}
                         setFormType={setFormType}
                         setIsFormOpen={setIsFormOpen}
                         userId={userId || ""}
                         setUpdatedReview={setUpdatedReview!}
-                      />
+                      /> */}
                     </div>
                   );
                 })
