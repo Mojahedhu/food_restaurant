@@ -9,7 +9,7 @@ import {
   createAddressAction,
   updateAddressAction,
   deleteAddressAction,
-} from "@/app/actions/address";
+} from "@/actions/address";
 
 import { Address } from "@/../types/sanityTypes";
 // ---------------- FETCHER ----------------
