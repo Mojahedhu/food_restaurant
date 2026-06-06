@@ -2,9 +2,10 @@
 "use server";
 
 import { client } from "@/sanity/lib/client";
-import auth from "../../../auth";
+
 import { AddressRaw } from "@/features/address/types/type";
-import { Address } from "../../../types/sanityTypes";
+import { Address } from "@/../types/sanityTypes";
+import auth from "../../auth";
 
 export async function createAddressAction(formData: Omit<Address, "_id">) {
   const session = await auth();

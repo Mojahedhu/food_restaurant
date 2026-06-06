@@ -14,7 +14,6 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useCartStore } from "../../../stores/cartStore";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import PaymentLoadingModal from "@/features/checkout/components/paymentLoadingModal";
 import { delay } from "@/lib/utils";
+import { useCartStore } from "@/stores/cartStore";
 
 interface CheckoutClientPageProps {
   addressId: string;
@@ -127,11 +127,26 @@ const CheckoutClientPage = ({
         }),
       });
 
-      const data = await res.json();
+      let data;
 
-      if (!data.url) {
-        toast.error("Failed to place order: " + data.message);
-        throw new Error("Failed to place order: " + data.message);
+      try {
+        data = await res.json();
+      } catch {
+        toast.error("Invalid server response");
+        throw new Error("Invalid server response");
+      }
+
+      console.log("Status:", res.status);
+      console.log("Checkout response:", data);
+
+      if (!res.ok) {
+        toast.error(data?.message || "Checkout failed");
+        throw new Error(data?.message || "Checkout failed");
+      }
+
+      if (!data?.url) {
+        toast.error("Failed to place order: Missing checkout URL");
+        throw new Error("Failed to place order: Missing checkout URL");
       }
       // Step 1: UI feedback
       setOrderLoading("connecting");

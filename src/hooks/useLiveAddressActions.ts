@@ -4,9 +4,8 @@ import {
   createAddressAction,
   deleteAddressAction,
   updateAddressAction,
-} from "@/app/actions/address";
+} from "@/actions/address";
 import { toast } from "sonner";
-import { setSingleDefault } from "@/lib/addresses-utils";
 
 export function useLiveAddressActions() {
   const store = useAddressStore();
