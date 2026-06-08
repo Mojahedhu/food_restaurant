@@ -149,6 +149,7 @@ const MenuClient = ({
   // Fetch data when sort changes [skip initial load unless sort change]
   useEffect(() => {
     if (isInitialLoad) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsInitialLoad(false);
       // Only fetch if sort changed from default
       if (sortBy !== "latest") {

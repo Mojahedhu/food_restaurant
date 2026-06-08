@@ -1,4 +1,3 @@
-import React from "react";
 import { Category } from "../../../sanity.types";
 import { getCategories } from "@/lib/sanityFunctions";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -56,7 +55,7 @@ const Categories = async () => {
                           alt={category?.name || "Category Image"}
                           width={250}
                           height={250}
-                          className="h-14 w-14 object-contain transition-transform duration-300"
+                          className="h-14 w-14 object-contain group-hover:scale-110 transition-transform duration-300"
                           // additional props if needed
                         />
                       ) : (

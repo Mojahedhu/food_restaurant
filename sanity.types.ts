@@ -525,6 +525,7 @@ export type Category = {
   };
   order?: number;
   isActive?: boolean;
+  itemCount?: number;
 };
 
 export type Author = {

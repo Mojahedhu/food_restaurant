@@ -1,5 +1,5 @@
 import { client } from "@/sanity/lib/client";
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import { FoodWithDetails } from "../../../../types/sanityTypes";
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import MenuClient from "./menu-client";
@@ -47,10 +47,17 @@ async function getMenuData() {
 }
 const MenuPage = async () => {
   const { foods, count } = await getMenuData();
+
   return (
     <div className="min-h-screen bg-background">
       <Breadcrumb items={[{ label: "Menu" }]} />
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense
+        fallback={
+          <div className="h-screen flex justify-center">
+            <div className="mt-12">Loading menu...</div>
+          </div>
+        }
+      >
         <MenuClient initialFoods={foods} totalCount={count} />
       </Suspense>
     </div>
