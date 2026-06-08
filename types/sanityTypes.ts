@@ -152,14 +152,15 @@ export type IngredientComplete = BaseIngredient;
 /**
  * Restaurant type with complete details
  */
-export interface restaurant {
+export interface Restaurant {
   _id: string;
   name: string;
   slug: string;
   description: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  image?: any;
+  image?: SanityAsset;
   location: {
+    address: string;
     latitude: number;
     longitude: number;
   };

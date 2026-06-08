@@ -89,6 +89,7 @@ export default defineType({
       type: "boolean",
       description:
         "If enabled, all food items will be available for this restaurant",
+      initialValue: false,
     }),
     defineField({
       name: "foodItems",
@@ -117,6 +118,7 @@ export default defineType({
       name: "totalReviews",
       title: "Total Reviews",
       type: "number",
+      validation: (Rule) => Rule.required().min(0).max(5),
       initialValue: 0,
       readOnly: true,
     }),

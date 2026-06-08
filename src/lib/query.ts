@@ -303,3 +303,157 @@ export const DISLIKES_COUNT_QUERY = groq`count(
       review._ref == $reviewId &&
       type == "dislike"
     ])`;
+
+/**
+ * =================================================================
+ * RESTAURANT QUERIES
+ * =================================================================
+ */
+
+/**
+ * Get all active restaurants
+ */
+
+export const ALL_RESTAURANTS_QUERY = groq`
+  *[_type == "restaurant" && isActive == true] {
+    _id,
+    name,
+    description,
+    image,
+    rating,
+    deliveryFee,
+    estimatedDeliveryTime,
+    "slug": slug.current,
+    location,
+    isActive,
+    minimumOrder,
+    totalReviews,
+    "categoriesCount": count(categories),
+    "foodItemsCount": count(foodItems)
+  }
+`;
+
+/**
+ * Get Featured restaurant
+ *
+ */
+
+export const FEATURED_RESTAURANTS_QUERY = `*[ _type == "restaurant" && isFeatured == true ] {
+_id,
+name,
+description,
+image,
+rating,
+deliveryFee,
+estimatedDeliveryTime,
+"slug": slug.current,
+location,
+isActive,
+minimumOrder,
+totalReviews,
+"categoriesCount": count(categories),
+"foodItemsCount": count(foodItems)
+}`;
+
+/**
+ * Get restaurant by slug
+ */
+
+export const GET_RESTAURANT_BY_SLUG_QUERY = groq`
+  *[_type == "restaurant" && slug.current == $slug][0] {
+    _id,
+    name,
+    description,
+    image,
+    rating,
+    deliveryFee,
+    estimatedDeliveryTime,
+    "slug": slug.current,
+    location,
+    phone,
+    email,
+    "openingHours": openingHours-> {
+      _id,
+      name,
+      schedule[]{
+        day,
+        openTime,
+        closeTime,
+        isClosed
+      }
+    },
+    isActive,
+    minimumOrder,
+    totalReviews,
+    "openingHours":openingHours->{
+      _id,
+      name,
+      schedule[]{
+        day,
+        openTime,
+        closeTime,
+        isClosed
+      }
+    },
+    "categoriesCount": count(categories),
+    "foodItemsCount": count(
+      select(
+        AllFoodItemsAvailable => *[_type == "food"] [0...12],
+        foodItems[]->{
+          _id,
+          name
+        }
+      )
+    ),
+    "foodItems": select(
+      AllFoodItemsAvailable => *[_type == "food"] [0...12] {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      price,
+      images,
+      averageRating,
+      "totalReviews": count(
+        *[
+          _type == "review" &&
+          food._ref == ^._id &&
+          approved == true
+        ]
+      ),
+      category->{
+        _id,
+        name,
+        "slug": slug.current
+      }
+    },
+      foodItems[]->{
+        _id,
+        name,
+        "slug": slug.current,
+        description,
+        price,
+        images,
+        averageRating,
+        "totalReviews": count(
+        *[
+          _type == "review" &&
+          food._ref == ^._id &&
+          approved == true
+        ]
+      ),
+      category->{
+        _id,
+        name,
+        "slug": slug.current
+      }
+    }
+    ),
+    "categories":categories[]->{
+      _id,
+      name,
+      "slug": slug.current,
+      image
+    }
+  }
+`;

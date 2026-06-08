@@ -5,6 +5,7 @@ import { FoodWithDetails } from "../../../types/sanityTypes";
 
 const FeaturedFoods = async () => {
   const foods = (await getFeaturedFoods()) as unknown as FoodWithDetails[];
+
   return (
     <div className="mb-10">
       {/* Section Header */}

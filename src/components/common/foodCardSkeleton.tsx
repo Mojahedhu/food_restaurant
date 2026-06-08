@@ -1,5 +1,3 @@
-import React from "react";
-
 const FoodCardSkeleton = () => {
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border bg-card shadow-sm animate-pulse">

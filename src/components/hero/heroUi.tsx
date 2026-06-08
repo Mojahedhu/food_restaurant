@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/refs */
 "use client";
 import {
   Carousel,
@@ -17,6 +18,7 @@ import { useRef } from "react";
 import AutoPlay from "embla-carousel-autoplay";
 
 const HeroUi = ({ banners }: { banners: Banner[] }) => {
+  console.log(banners.map((ban) => ban.title));
   const plugin = useRef(
     AutoPlay({
       delay: 5000,
@@ -30,6 +32,7 @@ const HeroUi = ({ banners }: { banners: Banner[] }) => {
   return (
     <section className="relative w-full overflow-hidden mb-16">
       <Carousel
+        // eslint-disable-next-line react-hooks/refs
         plugins={[plugin.current]}
         onMouseEnter={plugin.current.stop}
         onMouseLeave={plugin.current.reset}
@@ -95,7 +98,7 @@ const HeroUi = ({ banners }: { banners: Banner[] }) => {
                         "flex flex-col sm:flex-row gap-4 justify-end",
                       )}
                     >
-                      <AnimatedButton href={banner?.buttonHref as string}>
+                      <AnimatedButton href={"/menu"}>
                         {banner?.buttonTitle}
                         <ArrowRight className="ml-2 h-5 w-5 " />
                       </AnimatedButton>
