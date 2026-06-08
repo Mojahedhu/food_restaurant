@@ -5,7 +5,6 @@ import { stripe } from "@/lib/stripe";
 import { nanoid } from "zod/mini";
 
 export async function POST(request: Request) {
-  console.log("STRIPE SECRET KEY:", process.env.STRIPE_SECRET_KEY);
   try {
     const body = await request.json();
     const {
