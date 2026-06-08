@@ -48,7 +48,7 @@ function CategoriesGrid({ categories }: CategoriesGridProps) {
                 <div className="flex items-center justify-center">
                   <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted text-sm font-medium text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors duration-300">
                     <span className="w-2 h-2 rounded-full bg-primary" />
-                    {category.itemCount || 0} items
+                    {category.itemsCount || 0} items
                     <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </div>
                 </div>

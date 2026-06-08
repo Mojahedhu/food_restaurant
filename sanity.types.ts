@@ -525,7 +525,8 @@ export type Category = {
   };
   order?: number;
   isActive?: boolean;
-  itemCount?: number;
+  itemsCount?: number;
+  foodItems: FoodWithDetails[];
 };
 
 export type Author = {
@@ -807,6 +808,7 @@ export type BANNERS_QUERYResult = Array<never>;
 
 // Query TypeMap
 import "@sanity/client";
+import { FoodWithDetails } from "./types/sanityTypes";
 declare module "@sanity/client" {
   interface SanityQueries {
     '\n  *[_type == "banner" && active == true] | order(order asc) {\n    _id,\n    title,\n    description,\n    bannerImage,\n    buttonTitle,\n    buttonHref,\n    order\n  }\n': BANNERS_QUERYResult;

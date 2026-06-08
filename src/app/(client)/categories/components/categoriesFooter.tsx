@@ -1,6 +1,5 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
-import React from "react";
 
 function CategoriesFooter() {
   return (

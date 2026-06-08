@@ -40,7 +40,6 @@ const ReviewCard = ({
   userId,
   isPending,
 }: ReviewCardProps) => {
-  console.log(isPending);
   const { toggle } = useToggleReaction({
     reviewId: view.review._id,
   });
@@ -131,7 +130,6 @@ const ReviewCard = ({
                   const params = new URLSearchParams({
                     callbackUrl: pathname,
                   });
-                  console.log("callbackUrl", params.toString());
                   if (!userId) {
                     router.push(
                       `/auth/signup?callbackUrl=/${params.toString()}`,
@@ -170,7 +168,6 @@ const ReviewCard = ({
                   const params = new URLSearchParams({
                     callbackUrl: pathname,
                   });
-                  console.log("callbackUrl", params.toString());
                   if (!userId) {
                     router.push(
                       `/auth/signup?callbackUrl=/${params.toString()}`,

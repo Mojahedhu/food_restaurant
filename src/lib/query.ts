@@ -73,7 +73,44 @@ export const CATEGORIES_WITH_COUNT_QUERY = groq`
     "itemCount": count(*[_type == "food" && references(^._id)])
   }
 `;
+// =========================================================
+/**
+ * Get category by slug with food item details
+ */
 
+export const GET_CATEGORY_BY_SLUG_QUERY = groq`
+  *[_type == "category" && slug.current == $slug][0] {
+    _id,
+    name,
+    "slug": slug.current,
+    image,
+    description,
+    "itemsCount": count(*[_type == "food" && references(^._id)]),
+    "foodItems": *[_type == "food" && references(^._id)] | order(order asc) {
+      _id,
+      name,
+      "slug": slug.current,
+      description,
+      "basePrice": price,
+      images,
+      preparationTime,
+      spiceLevel,
+      available,
+      featured,
+      averageRating,
+      totalReviews,
+      category->{
+        _id,
+        name,
+        "slug": slug.current
+      },
+      varieties[]->{
+        _id,
+        name,
+      }
+    }
+  }
+`;
 // =========================================================
 
 /**
