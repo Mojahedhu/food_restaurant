@@ -1,14 +1,13 @@
 import { Breadcrumb } from "@/components/common/breadcrumb";
-import CategoriesHero from "./components/categoriesHero";
-import CategoriesGrid from "./components/categoriesGrid";
+import CategoriesHero from "./_components/categoriesHero";
+import CategoriesGrid from "./_components/categoriesGrid";
 import { getCategories } from "@/lib/sanityFunctions";
-import CategoriesFooter from "./components/categoriesFooter";
+import CategoriesFooter from "./_components/categoriesFooter";
 import { Suspense } from "react";
 
 async function CategoriesPage() {
   const categories = await getCategories();
 
-  console.log("categories", categories);
   return (
     <div className="min-h-screen bg-background">
       <Breadcrumb

@@ -17,7 +17,7 @@ import {
   Phone,
 } from "lucide-react";
 import Image from "next/image";
-import OpeningSchedule from "./components/openingSchedule";
+import OpeningSchedule from "./_components/openingSchedule";
 
 import RestaurantPageSkeleton from "./loading";
 

@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
-import { RestaurantCardSkeleton } from "./components/restaurantCardSkeleton";
-import { BreadcrumbSkeleton } from "./components/breadcrumbSkeleton";
+import { RestaurantCardSkeleton } from "./_components/restaurantCardSkeleton";
+import { BreadcrumbSkeleton } from "./_components/breadcrumbSkeleton";
 
 export default function RestaurantsPageSkeleton() {
   return (

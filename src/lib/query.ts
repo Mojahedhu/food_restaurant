@@ -70,7 +70,7 @@ export const CATEGORIES_WITH_COUNT_QUERY = groq`
     name,
     "slug": slug.current,
     image,
-    "itemCount": count(*[_type == "food" && references(^._id)])
+    "itemsCount": count(*[_type == "food" && references(^._id)])
   }
 `;
 // =========================================================

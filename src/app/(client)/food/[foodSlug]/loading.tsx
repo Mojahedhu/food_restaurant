@@ -3,7 +3,7 @@ import {
   FoodDetailsSkeleton,
   FoodReviewSkeleton,
   RelatedFoodSkeleton,
-} from "./components/skeleton";
+} from "./_components/skeleton";
 
 const loading = () => {
   return (

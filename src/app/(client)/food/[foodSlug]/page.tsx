@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import FoodDetails from "./components/foodDetails";
-import RelatedFood from "./components/relatedFood";
+import FoodDetails from "./_components/foodDetails";
+import RelatedFood from "./_components/relatedFood";
 import {
   FoodDetailsSkeleton,
   RelatedFoodSkeleton,
-} from "./components/skeleton";
+} from "./_components/skeleton";
 import {
   getMyReviewReactions,
   getReviewMetrics,
@@ -12,7 +12,7 @@ import {
   mergeReviewFeed,
 } from "@/lib/data/review";
 
-import FoodReviewSkeleton from "./components/foodReviewSkeleton";
+import FoodReviewSkeleton from "./_components/foodReviewSkeleton";
 import auth from "../../../../../auth";
 import { getFoodBySlug } from "@/lib/data/food";
 import { Metadata } from "next";
@@ -22,8 +22,8 @@ import { urlFor } from "@/sanity/lib/image";
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import { SanityImageSource } from "@sanity/image-url";
 import { Separator } from "@/components/ui/separator";
-import ReviewClientProvider from "./components/reviewClientProvider";
-import ReviewSection from "./components/reviewSection";
+import ReviewClientProvider from "./_components/reviewClientProvider";
+import ReviewSection from "./_components/reviewSection";
 
 export async function generateMetadata({
   params,

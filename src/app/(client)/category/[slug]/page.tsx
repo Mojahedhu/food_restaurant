@@ -1,7 +1,8 @@
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import { getCategoryBySlug } from "@/lib/sanityFunctions";
-import CategoryDetailsHero from "./components/categoryDetailsHero";
-import CategoryFoodItems from "./components/categoryFoodItems";
+import CategoryDetailsHero from "./_components/categoryDetailsHero";
+import CategoryFoodItems from "./_components/categoryFoodItems";
+import CategoryFoodPageSkeleton from "./loading";
 
 interface CategoryFoodPageProps {
   params: Promise<{ slug: string }>;
@@ -9,9 +10,9 @@ interface CategoryFoodPageProps {
 const CategoryFoodPage = async ({ params }: CategoryFoodPageProps) => {
   const { slug } = await params;
   const categoryDetails = await getCategoryBySlug(slug);
-  const { name, description, itemsCount } = categoryDetails;
+
   if (!categoryDetails) {
-    return null;
+    return <CategoryFoodPageSkeleton />;
   }
   return (
     <div className="min-h-screen bg-background">
