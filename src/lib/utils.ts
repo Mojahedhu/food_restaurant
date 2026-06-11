@@ -48,3 +48,12 @@ export const getUserImage = (user: Partial<User>) => {
 
   return null;
 };
+
+export const dateFormatter = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};

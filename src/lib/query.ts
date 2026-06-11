@@ -243,6 +243,109 @@ export const GET_FOOD_BY_CATEGORY_QUERY = groq`
   }
 `;
 
+/** ============================================================
+ *  Get first four posts for home page
+ * =============================================================
+ */
+export const FEATURED_POSTS_QUERY = groq`*[_type == "post" && isFeatured == true] 
+  | order(publishedAt desc) [0...4] {
+  _id,
+  title,
+  slug,
+  mainImage,
+  publishedAt,
+  author->{_id, name, image, bio},
+  categories[]->{_id, title, slug}
+}`;
+/** ============================================================
+ *  Get latest post
+ * =============================================================
+ */
+export const LATEST_POSTS_QUERY = groq`*[_type == "post"] 
+  | order(publishedAt desc) [0...4] {
+  _id,
+  title,
+  "slug": slug.current,
+  mainImage,
+  publishedAt,
+}`;
+
+/** ============================================================
+ *  Get all posts for blog page
+ * =============================================================
+ */
+export const ALL_POSTS_QUERY = groq`*[_type == "post"] 
+  | order(publishedAt desc) {
+  _id,
+  title,
+  slug,
+  mainImage,
+  publishedAt,
+  author->{ _id, name, image, bio},
+  categories[]->{_id, title, slug}
+}`;
+
+/** ============================================================
+ *  Get full details of a post by slug for blog post page
+ * =============================================================
+ */
+
+export const GET_POST_DETAILS_BY_SLUG_QUERY = groq`
+  *[_type == "post" && slug.current == $slug][0]{
+    _id,
+    _type,
+    _createdAt,
+    _updatedAt,
+
+    title,
+    "slug": slug.current,
+    isFeatured,
+    publishedAt,
+
+    author->{
+      _id,
+      name,
+      image,
+      bio
+    },
+
+    mainImage{
+      ...,
+      alt,
+      asset->
+    },
+
+    categories[]->{
+      _id,
+      title,
+      "slug": slug.current
+    },
+
+    body[]{
+      ...,
+
+      _type == "image" => {
+        ...,
+        asset->
+      },
+
+      _type == "twoUpImages" => {
+        ...,
+
+        image1{
+          ...,
+          asset->
+        },
+
+        image2{
+          ...,
+          asset->
+        }
+      }
+    }
+  }
+`;
+// =====================================================
 /**
  * Get addresses
  */

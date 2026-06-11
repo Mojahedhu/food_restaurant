@@ -18,7 +18,6 @@ import { useRef } from "react";
 import AutoPlay from "embla-carousel-autoplay";
 
 const HeroUi = ({ banners }: { banners: Banner[] }) => {
-  console.log(banners.map((ban) => ban.title));
   const plugin = useRef(
     AutoPlay({
       delay: 5000,

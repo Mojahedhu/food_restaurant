@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/provider/auth-provider";
 import { Toaster } from "sonner";
+import { SanityLive } from "@/sanity/lib/live";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -44,6 +45,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased font-sans`}
       >
         <AuthProvider>{children}</AuthProvider>
+        <SanityLive />
         <Toaster
           position="top-right"
           richColors

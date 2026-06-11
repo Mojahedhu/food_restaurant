@@ -3,7 +3,11 @@
  * These types extend the base Sanity types with resolve
  */
 
-import { SanityAsset } from "@sanity/image-url";
+import {
+  SanityAsset,
+  SanityImageCrop,
+  SanityImageHotspot,
+} from "@sanity/image-url";
 import type {
   Food as BaseFood,
   Category as BaseCategory,
@@ -15,6 +19,7 @@ import type {
   UserImage,
   ReactionType,
 } from "../sanity.types";
+import { PortableTextBlock, SanityImageAssetDocument } from "next-sanity";
 
 /**
  * Food with resolved category reference
@@ -317,6 +322,53 @@ export type User = {
   walletBalance?: number;
 };
 
+/* =======================================================
+ *  Post details type
+ * =======================================================
+ */
+export interface SanityImage {
+  _type: "image";
+  asset?: SanityImageAssetDocument;
+  hotspot?: SanityImageHotspot;
+  crop?: SanityImageCrop;
+}
+
+export interface PostAuthor {
+  _id: string;
+  name: string;
+  image?: SanityImage;
+  bio: string;
+}
+
+export interface PostCategory {
+  _id: string;
+  title: string;
+  slug: string;
+}
+
+export interface PostMainImage extends SanityImage {
+  alt?: string;
+}
+
+export interface PortableTextImageBlock extends SanityImage {
+  _key: string;
+}
+
+export interface TwoUpImagesBlock {
+  _type: "twoUpImages";
+  _key: string;
+
+  caption?: string;
+
+  image1?: SanityImage;
+  image2?: SanityImage;
+}
+
+export type PostBodyBlock =
+  | PortableTextBlock
+  | PortableTextImageBlock
+  | TwoUpImagesBlock;
+
 /**
  * Review and ReviewReaction type
  */
@@ -325,6 +377,36 @@ export type SanityReference = {
   _ref: string;
   _type: string;
 };
+
+export interface PostDetails {
+  _id: string;
+  _type: "post";
+
+  _createdAt: string;
+  _updatedAt: string;
+
+  title: string;
+  slug: string;
+
+  isFeatured?: boolean;
+  publishedAt?: string;
+
+  author?: PostAuthor;
+
+  mainImage?: PostMainImage;
+
+  categories?: PostCategory[];
+
+  body?: PostBodyBlock[];
+}
+
+export interface LatestPost {
+  _id: string;
+  title: string;
+  slug: string;
+  mainImage?: SanityImage;
+  publishedAt: string;
+}
 
 /**
  * =========================================================
