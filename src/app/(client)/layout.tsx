@@ -1,12 +1,19 @@
 import Header from "@/components/common/header";
 import Footer from "@/components/home/footer";
-import React from "react";
+import React, { ViewTransition } from "react";
 
-const ClientLayout = ({ children }: { children: React.ReactNode }) => {
+interface ClientLayoutProps {
+  children: React.ReactNode;
+  authModal: React.ReactNode;
+}
+
+const ClientLayout = ({ children, authModal }: ClientLayoutProps) => {
   return (
     <div>
       <Header />
-      {children}
+
+      {authModal}
+      <ViewTransition name="client-route">{children}</ViewTransition>
       <Footer />
     </div>
   );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ViewTransition } from "react";
 import UserBreadcrumb from "../../../features/user/components/userBreadcrumb";
 import UserNav from "../../../features/user/components/userNav";
 
@@ -18,7 +18,7 @@ const UserLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       </div>
-      {children}
+      <ViewTransition name="user-route">{children}</ViewTransition>
     </div>
   );
 };

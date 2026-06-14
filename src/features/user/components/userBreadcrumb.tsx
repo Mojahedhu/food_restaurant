@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 const UserBreadcrumb = () => {
   const pathname = usePathname();
   const pathnameList = pathname.split("/");
-  const pathSegments = pathnameList[2];
 
   if (pathnameList.length <= 2 || pathnameList[2] === "dashboard") {
     return (
@@ -23,6 +22,7 @@ const UserBreadcrumb = () => {
   }
 
   if (pathnameList.length <= 3) {
+    const pathSegments = pathnameList[2];
     return (
       <>
         <Breadcrumb
@@ -41,6 +41,7 @@ const UserBreadcrumb = () => {
       </>
     );
   } else {
+    const pathSegments = pathnameList[3];
     return (
       <>
         <Breadcrumb

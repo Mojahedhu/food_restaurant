@@ -197,7 +197,7 @@ const CartSummaryWrapper = ({
                     }
                     router.push(`/checkout?${sp.toString()}`);
                   } else {
-                    router.push("/auth/signin");
+                    router.push("/auth/signin", { scroll: false });
                   }
                 }}
               >

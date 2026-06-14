@@ -98,8 +98,6 @@ const OrderDetailsClientPage = ({
     return () => clearInterval(timer);
   }, [running]);
 
-  console.log("order : ", order);
-
   if (loading) {
     return <div>Loading...</div>;
   }

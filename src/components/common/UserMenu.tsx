@@ -98,7 +98,7 @@ const UserMenu = () => {
   return (
     <div className="flex items-center gap-3">
       <div>
-        <Link href={"/auth/signin"}>
+        <Link href={"/auth/signin"} scroll={false}>
           <button className="border border-primary px-5 py-2.5 rounded-full text-xs font-medium relative overflow-hidden hover-effect group">
             <span className="absolute inset-0 w-full -translate-y-full h-full rounded-full bg-primary group-hover:translate-y-0 hover-effect" />
             <span className="relative  z-10 text-primary group-hover:text-white hover-effect">
@@ -108,7 +108,7 @@ const UserMenu = () => {
         </Link>
       </div>
       <div>
-        <Link href={"/auth/signup"}>
+        <Link href={"/auth/signup"} scroll={false}>
           <button className="relative border border-primary px-5 py-2.5 rounded-full text-xs font-medium overflow-hidden group">
             <span className="absolute inset-0 bg-primary w-full h-full rounded-full group-hover:translate-y-full hover-effect" />
             <span className="relative z-10 text-white group-hover:text-primary hover-effect">

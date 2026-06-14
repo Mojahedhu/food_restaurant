@@ -110,7 +110,7 @@ const TableSkeletonLoading = () => {
 
 const AddressesPage = ({ userId }: { userId: string | undefined }) => {
   const [addressToUpdate, setAddressToUpdate] = useState<Address | null>(null);
-  console.log(addressToUpdate);
+
   const [openAddressForm, setOpenAddressForm] = useState(false);
   const [openClearCartDialog, setOpenClearCartDialog] = useState(false);
   const [deletedAddressId, setDeletedAddressId] = useState<string | null>(null);
@@ -194,7 +194,7 @@ const AddressesPage = ({ userId }: { userId: string | undefined }) => {
                             const isDeleting = deletingId === addr._id;
                             const isUpdating = updatingId === addr._id;
                             // console.log(deletingId, addr._id);
-                            console.log(updatingId, addr._id, isUpdating);
+
                             return (
                               <TableRow
                                 key={addr._id}

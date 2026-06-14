@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ViewTransition } from "react";
 import auth from "../../../auth";
 import { redirect } from "next/navigation";
 
@@ -11,7 +11,7 @@ const RootLayout = async ({
     redirect("/");
   }
 
-  return <> {children}</>;
+  return <ViewTransition name="auth-route">{children}</ViewTransition>;
 };
 
 export default RootLayout;

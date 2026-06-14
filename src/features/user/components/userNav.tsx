@@ -6,8 +6,12 @@ import { usePathname } from "next/navigation";
 
 const UserNav = () => {
   const pathname = usePathname();
-  const pathSegments = pathname.split("/");
-  const currentPath = pathSegments[pathSegments.length - 1];
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const currentPath =
+    pathSegments.length === 3 && pathSegments[1] === "orders"
+      ? "orders"
+      : pathSegments[pathSegments.length - 1];
+
   return (
     <nav className="hidden lg:block">
       <div className="flex items-center gap-1 py-2">

@@ -131,9 +131,9 @@ const ReviewCard = ({
                     callbackUrl: pathname,
                   });
                   if (!userId) {
-                    router.push(
-                      `/auth/signup?callbackUrl=/${params.toString()}`,
-                    );
+                    router.push(`/auth/signin?${params.toString()}`, {
+                      scroll: false,
+                    });
                     return;
                   }
                   toggle(isLiked ? null : "like");
@@ -171,6 +171,7 @@ const ReviewCard = ({
                   if (!userId) {
                     router.push(
                       `/auth/signup?callbackUrl=/${params.toString()}`,
+                      { scroll: false },
                     );
                     return;
                   }

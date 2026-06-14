@@ -24,7 +24,7 @@ const OrdersClientPage = ({
     isAdmin,
     initialOrders,
   });
-  console.log(orders);
+
   const cardItems = [
     {
       label: "Total Orders",

@@ -24,6 +24,13 @@ export default async function proxy(req: NextRequest) {
   const isAdminPath = nextUrl.pathname.startsWith("/admin");
   const isAuthPath = nextUrl.pathname.startsWith("/auth");
 
+  // 💹 0. Redirect logged-in users away from auth pages.
+  // This also protects intercepted auth modal navigation,
+  // because the requested URL is still /auth/signin or /auth/signup.
+  if (isAuthPath && isLoggedIn) {
+    return NextResponse.redirect(new URL("/", nextUrl.origin));
+  }
+
   // ✅ 1. Auth protection first
   // Redirect to signin page if accessing protected path without authentication
   if (isProtectedPath && !isLoggedIn && !isAuthPath) {
