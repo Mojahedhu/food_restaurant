@@ -635,7 +635,9 @@
 ::view-transition-old(admin-route),
 ::view-transition-new(client-route),
 ::view-transition-new(auth-route),
-::view-transition-new(admin-route) {
+::view-transition-new(admin-route),
+::view-transition-new(user-route),
+::view-transition-old(user-route) {
   animation-duration: 420ms;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   animation-fill-mode: both;
