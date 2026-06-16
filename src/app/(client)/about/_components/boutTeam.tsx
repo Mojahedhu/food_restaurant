@@ -1,9 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { MaleChef } from "./maleChef";
+import { FemaleChef } from "./femaleChef";
 interface Team {
   name: string;
   role: string;
-  image: string;
+  image: React.ReactNode;
   info: string;
 }
 
@@ -11,19 +13,19 @@ const team: Team[] = [
   {
     name: "John Smith",
     role: "Head Chef",
-    image: "👨‍🍳",
+    image: <MaleChef />,
     info: "15 years of culinary excellence",
   },
   {
     name: "Sarah Johnson",
     role: "Pastry Chef",
-    image: "👩‍🍳",
+    image: <FemaleChef />,
     info: "Award-winning dessert specialist",
   },
   {
     name: "Michael Brown",
     role: "Sous Chef",
-    image: "👨‍🍳",
+    image: <MaleChef />,
     info: "Expert in Mediterranean cuisine",
   },
 ];
@@ -51,7 +53,7 @@ export default AboutTeam;
 interface TeamCardProps {
   name: string;
   role: string;
-  image: string;
+  image: React.ReactNode;
   info: string;
 }
 
