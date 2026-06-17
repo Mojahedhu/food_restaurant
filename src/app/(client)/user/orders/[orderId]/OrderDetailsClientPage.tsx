@@ -270,10 +270,15 @@ const OrderDetailsClientPage = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="px-6 space-y-4">
-                    {order.items?.map((item) => {
+                    {order.items?.map((item, index) => {
+                      console.log(item._key);
                       return (
                         <div
-                          key={item._key}
+                          key={
+                            typeof item._key === "string"
+                              ? item._key
+                              : `item-${index}`
+                          }
                           className="space-y-3 max-h-100 overflow-y-auto"
                         >
                           <div className="flex items-center justify-between py-3 px-3 rounded-lg hover:bg-muted/50 transition-colors border-b last:border-0">

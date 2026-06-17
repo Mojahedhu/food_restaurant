@@ -215,15 +215,22 @@ export async function upsertReview({
    * ==============================
    */
 
+  const currentRatingSum = food.ratingSum ?? 0;
+  const currentRatingCount = food.ratingCount ?? 0;
+
   if (type === "create") {
     const ratingDelta = rating;
     const countDelta = 1;
 
     const { ratingAverage, weightedRating } = computeFoodMetrics({
-      ratingSum: food.ratingSum + ratingDelta,
-      ratingCount: food.ratingCount + countDelta,
+      ratingSum: currentRatingSum + ratingDelta,
+      ratingCount: currentRatingCount + countDelta,
     });
     tx.patch(foodId, {
+      setIfMissing: {
+        ratingSum: 0,
+        ratingCount: 0,
+      },
       inc: {
         ratingSum: ratingDelta,
         ratingCount: countDelta,
@@ -237,10 +244,14 @@ export async function upsertReview({
     const ratingDelta = Math.max(0, rating - previousRating);
 
     const { ratingAverage, weightedRating } = computeFoodMetrics({
-      ratingSum: food.ratingSum + ratingDelta,
-      ratingCount: food.ratingCount,
+      ratingSum: currentRatingSum + ratingDelta,
+      ratingCount: currentRatingCount,
     });
     tx.patch(foodId, {
+      setIfMissing: {
+        ratingSum: 0,
+        ratingCount: 0,
+      },
       inc: {
         ratingSum: ratingDelta,
       },

@@ -11,6 +11,8 @@ import { structureTool } from "sanity/structure";
 import { apiVersion, dataset, projectId } from "./src/sanity/env";
 import { schema } from "./src/sanity/schemaTypes";
 import { structure } from "./src/sanity/structure";
+import { DashboardView } from "@/sanity/components/DashboardView";
+import { DashboardIcon } from "@sanity/icons";
 
 export default defineConfig({
   basePath: "/studio-quick-food",
@@ -23,5 +25,14 @@ export default defineConfig({
     // Vision is for querying with GROQ from inside the Studio
     // https://www.sanity.io/docs/the-vision-plugin
     visionTool({ defaultApiVersion: apiVersion }),
+  ],
+  tools: (prev) => [
+    {
+      name: "dashboard",
+      title: "Dashboard",
+      icon: DashboardIcon,
+      component: DashboardView,
+    },
+    ...prev,
   ],
 });

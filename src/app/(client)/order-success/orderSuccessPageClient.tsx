@@ -24,6 +24,7 @@ interface OrderSuccessPageClientProps {
 
 const OrderSuccessPageClient = ({ order }: OrderSuccessPageClientProps) => {
   const router = useRouter();
+  console.log(order);
 
   return (
     <div className="bg-linear-to-b from-primary/5 to-background min-h-screen py-12">
@@ -135,9 +136,9 @@ const OrderSuccessPageClient = ({ order }: OrderSuccessPageClientProps) => {
             <CardContent className="px-6 space-y-4">
               <div className="space-y-3">
                 {order.items &&
-                  order.items.map((item) => (
+                  order.items.map((item, index) => (
                     <div
-                      key={item._key}
+                      key={typeof item._key === "string" ? item._key : `item-${index}`}
                       className="flex items-center justify-between py-2"
                     >
                       <div className="flex-1">
