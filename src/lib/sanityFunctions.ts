@@ -1,4 +1,3 @@
-import { client } from "@/sanity/lib/client";
 import {
   ALL_POSTS_QUERY,
   AVAILABLE_FOODS_QUERY,

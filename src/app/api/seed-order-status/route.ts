@@ -59,6 +59,17 @@ export async function GET() {
       isDefault: false,
       isActive: true,
     },
+    {
+      _id: "status-cancelled", // Or "status_cancelled" to match the webhook
+      _type: "orderStatus",
+      title: "Cancelled",
+      value: { _type: "slug", current: "cancelled" },
+      description: "The order has been cancelled.",
+      color: "#EF4444", // Red
+      order: 6,
+      isDefault: false,
+      isActive: true,
+    },
   ];
 
   try {

@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { User } from "../../types/sanityTypes";
 import { urlFor } from "@/sanity/lib/image";
+import { SanityAsset } from "@sanity/image-url";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -56,4 +57,40 @@ export const dateFormatter = (dateString: string) => {
     month: "long",
     day: "numeric",
   });
+};
+
+/* ======================================================
+ * Format currency for display
+ *
+ * @param {number} amount - The amount to format
+ * @returns {string} The formatted currency string
+ *
+ * usage:
+ * formatCurrency(100)
+ */
+
+export const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount);
+};
+
+/*
+ *  Image Helper Functions
+ *  Usage: getImageUrl(imageSource)
+ */
+export const getImageUrl = (imageSource?: SanityAsset | string) => {
+  if (!imageSource) return "";
+  if (typeof imageSource === "string") {
+    if (imageSource.startsWith("http") || imageSource.startsWith("/")) {
+      return imageSource;
+    }
+    return imageSource;
+  }
+  try {
+    return urlFor(imageSource).url();
+  } catch (e) {
+    return `${e}`;
+  }
 };

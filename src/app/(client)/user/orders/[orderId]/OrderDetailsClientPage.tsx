@@ -309,32 +309,37 @@ const OrderDetailsClientPage = ({
                   <div className="space-y-3">
                     <div className="flex justify-between text-base">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span className="font-medium">${order.subtotal}</span>
+                      <span className="font-medium">
+                        ${order.subtotal?.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-base">
                       <span className="text-muted-foreground">
                         Delivery Fee
                       </span>
-                      <span className="font-medium">${order.deliveryFee}</span>
+                      <span className="font-medium">
+                        ${order.deliveryFee?.toFixed(2)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-base">
                       <span className="text-muted-foreground">Tax</span>
-                      <span className="font-medium">${order.tax}</span>
+                      <span className="font-medium">
+                        ${order.tax?.toFixed(2)}
+                      </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between text-xl font-bold">
                       <span>Total</span>
-                      <span className="text-primary">${order.total}</span>
+                      <span className="text-primary">
+                        ${order.total?.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href={"/"} className="flex-1">
-                  <Button
-                    variant={"outline"}
-                    className="w-full h-10 py-2.5 h-fit"
-                  >
+                  <Button variant={"outline"} className="w-full py-2.5 h-fit">
                     <Home className="mr-2 h-5 w-5" />
                     Back to Home
                   </Button>

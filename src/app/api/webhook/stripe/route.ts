@@ -35,7 +35,7 @@ export async function POST(req: Request) {
           paymentStatus: "paid",
           status: {
             _type: "reference",
-            _ref: "status_confirmed",
+            _ref: "status-confirmed",
           },
         })
         .commit();
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
           paymentStatus: "failed",
           status: {
             _type: "reference",
-            _ref: "status_cancelled",
+            _ref: "status-cancelled",
           },
         })
         .commit();

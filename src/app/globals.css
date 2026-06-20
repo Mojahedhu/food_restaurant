@@ -3,7 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
-
+/* 
 .blue {
   --radius: 0.625rem;
   --background: #fff;
@@ -42,7 +42,7 @@
   --font-mono: var(--font-geist-mono);
   --orange: #f3680f;
   --yellow: #fac547;
-}
+} */
 
 :root {
   /* --background: oklch(0.9711 0.0074 80.7211); */
