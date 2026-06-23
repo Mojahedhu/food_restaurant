@@ -24,6 +24,9 @@ export function OrdersFilterBar() {
 
   // Debounce search typing
   useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    if (search === urlSearch) return;
+
     const delayDebounce = setTimeout(() => {
       // eslint-disable-next-line react-hooks/immutability
       updateUrlParam("search", search);

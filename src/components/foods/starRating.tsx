@@ -59,7 +59,7 @@ export const StarRating = ({
                 <Star
                   className={cn(
                     sizeClasses[size],
-                    "fill-yellow-500 text-yellow-500",
+                    "fill-amber-500 text-amber-500",
                   )}
                 />
               </div>

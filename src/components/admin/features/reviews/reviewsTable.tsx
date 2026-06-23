@@ -6,7 +6,6 @@ import { useReviewsLogic } from "@/hooks/useReviewsLogic";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import {
-  Star,
   MoreHorizontal,
   CheckCircle,
   XCircle,
@@ -39,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ReviewDetailsDialog } from "./reviewDetailsDialog";
 import { getUserImage } from "@/lib/utils";
+import { StarRating } from "@/components/foods/starRating";
 
 interface ReviewsTableProps {
   initialReviews: ReviewSummary[];
@@ -125,7 +125,7 @@ export function ReviewsTable({ initialReviews }: ReviewsTableProps) {
               </span>
             </TableHead>
             <TableHead className="w-[100px]">Status</TableHead>
-            <TableHead className="w-[60px] text-right"></TableHead>
+            <TableHead className="w-[60px] text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -154,7 +154,7 @@ export function ReviewsTable({ initialReviews }: ReviewsTableProps) {
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-3">
                       <Avatar className="size-8">
-                        <AvatarImage src={avatar || ""} />
+                        <AvatarImage src={avatar || "/default_user.png"} />
                         <AvatarFallback>
                           <User className="size-4 text-muted-foreground" />
                         </AvatarFallback>
@@ -178,16 +178,7 @@ export function ReviewsTable({ initialReviews }: ReviewsTableProps) {
                   {/* Rating Stars Cell */}
                   <TableCell>
                     <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`size-3.5 ${
-                            i < review.rating
-                              ? "text-amber-500 fill-amber-500"
-                              : "text-muted"
-                          }`}
-                        />
-                      ))}
+                      <StarRating rating={review.rating} />
                     </div>
                   </TableCell>
 

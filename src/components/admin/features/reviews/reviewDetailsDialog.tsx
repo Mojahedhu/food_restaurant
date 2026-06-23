@@ -36,7 +36,7 @@ export function ReviewDetailsDialog({
   const [replyText, setReplyText] = useState(review.adminReply || "");
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmitReply = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmitReply = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!replyText.trim() || replyText.trim() === review.adminReply) return;
 
@@ -62,7 +62,7 @@ export function ReviewDetailsDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="relative space-y-4 py-2">
           {/* User & Item Context */}
           <div className="grid grid-cols-2 gap-4 text-sm bg-muted/40 p-3 rounded-lg border">
             <div>
@@ -124,10 +124,12 @@ export function ReviewDetailsDialog({
               placeholder="Write an official response to the customer feedback..."
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              className="resize-none h-24 text-sm"
+              className="resize-none h-24 text-sm break-all"
               disabled={submitting}
             />
-
+            <div className="flex justify-end p-0 m-0">
+              {replyText.length} / 1000
+            </div>
             <DialogFooter className="pt-2 gap-2 sm:gap-0">
               {/* Quick Status Control Buttons inside Dialog Footer */}
               <div className="flex gap-2 mr-auto">

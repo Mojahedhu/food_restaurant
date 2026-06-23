@@ -17,12 +17,11 @@ All features are designed to comply with the zero-trust server validation, crash
 
 ---
 
-## Open Questions
+## Design Decisions & Resolutions
 
 > [!NOTE]
 >
-> - Should we also add a `moderationStatus` field (with explicit states like `pending`, `approved`, `flagged`) to the review schema, or is the existing boolean `approved` (default: `false` for pending, `true` for approved) sufficient?
->   - _Recommendation:_ We'll keep the boolean `approved` to maintain compatibility with existing client-side filters (`approved == true`), but we can add an `adminReply` field.
+> - **Schema Design Decision:** We will keep the boolean `approved` field to maintain compatibility with existing client-side queries (`approved == true`). To support feedback and responses, we will add the `adminReply` field to the schema.
 
 ---
 
@@ -43,6 +42,8 @@ src/
 │       └── features/
 │           └── reviews/
 │               ├── reviewsTable.tsx        # NEW: Filterable, paginated review table list
+│               ├── reviewsTableSkeleton.tsx # NEW: Skeleton loading placeholder for Reviews Table
+│               ├── reviewFilter.tsx        # NEW: Reusable search and filter controls
 │               ├── reviewMetricsCards.tsx   # NEW: Average rating display & stars breakdown
 │               └── reviewDetailsDialog.tsx  # NEW: Reply interface & full metadata view
 ├── hooks/
@@ -365,9 +366,6 @@ export async function replyToReviewAction(rawInput: unknown) {
   }
 }
 
-/**
- * Permanently delete a review
- */
 export async function deleteReviewAction(rawInput: unknown) {
   const result = DeleteReviewSchema.safeParse(rawInput);
   if (!result.success) {
@@ -376,12 +374,29 @@ export async function deleteReviewAction(rawInput: unknown) {
 
   const { reviewId } = result.data;
   try {
-    await client.delete(reviewId);
+    // 1. Query for all documents that reference this review (e.g. metrics, reactions)
+    const referencingDocIds = await client.fetch<string[]>(
+      `*[references($reviewId)]._id`,
+      { reviewId },
+    );
+
+    // 2. Perform a transaction to delete all referencing documents and the review itself
+    let transaction = client.transaction();
+    for (const docId of referencingDocIds) {
+      transaction = transaction.delete(docId);
+    }
+    transaction = transaction.delete(reviewId);
+
+    await transaction.commit();
+
     revalidateTag("reviews");
     return { success: true };
   } catch (error) {
     console.error(`Failed to delete review ${reviewId}:`, error);
-    return { success: false, error: "Database deletion failed." };
+    return {
+      success: false,
+      error: "Database deletion failed due to dependency constraints.",
+    };
   }
 }
 ```
@@ -542,7 +557,10 @@ export function useReviewsLogic(initialReviews: ReviewSummary[]) {
   };
 
   const handleDelete = async (reviewId: string) => {
-    // 1. Apply local optimistic deletion (null ID acts as deletion flag)
+    // 1. Capture previous state to restore on rollback
+    const previousUpdate = localUpdates[reviewId];
+
+    // 2. Apply local optimistic deletion (null ID acts as deletion flag)
     setLocalUpdates((prev) => ({
       ...prev,
       [reviewId]: { _id: null as any },
@@ -554,10 +572,14 @@ export function useReviewsLogic(initialReviews: ReviewSummary[]) {
         toast.success("Review deleted permanently.");
       } else {
         toast.error("Failed to delete review.");
-        // Rollback local change
+        // Rollback local change to previous state (or remove override if there was none)
         setLocalUpdates((prev) => {
           const next = { ...prev };
-          delete next[reviewId];
+          if (previousUpdate) {
+            next[reviewId] = previousUpdate;
+          } else {
+            delete next[reviewId];
+          }
           return next;
         });
       }
@@ -1197,6 +1219,205 @@ export function ReviewDetailsDialog({
 }
 ```
 
+### 5.1 Reusable Review Filter Component
+
+#### [NEW] [reviewFilter.tsx](file:///c:/Users/user/Downloads/Video/Vishwas/food_app/src/components/admin/features/reviews/reviewsFilter.tsx)
+
+```tsx
+"use client";
+
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search } from "lucide-react";
+import { useTransition } from "react";
+
+interface ReviewFilterProps {
+  initialSearch?: string;
+  initialRating?: string;
+  initialStatus?: string;
+}
+
+export function ReviewFilter({
+  initialSearch = "",
+  initialRating = "all",
+  initialStatus = "all",
+}: ReviewFilterProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  const handleFilterChange = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", "1"); // Reset to page 1 on filter/search change
+
+    if (value && value !== "all") {
+      params.set(key, value);
+    } else {
+      params.delete(key);
+    }
+
+    startTransition(() => {
+      router.push(`${pathname}?${params.toString()}`);
+    });
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const searchVal = formData.get("search") as string;
+    handleFilterChange("search", searchVal);
+  };
+
+  return (
+    <div className="relative flex flex-col gap-3 md:flex-row md:items-center justify-between bg-card p-4 rounded-xl border shadow-sm">
+      {/* Search Input Box */}
+      <form className="relative flex-1 max-w-sm" onSubmit={handleSearchSubmit}>
+        <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+        <Input
+          name="search"
+          defaultValue={initialSearch}
+          placeholder="Search reviews, users, or items..."
+          className="pl-9 h-9"
+        />
+        {isPending && (
+          <div className="absolute right-3 top-2.5 size-4 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        )}
+      </form>
+
+      {/* Filter Selection Dropdowns */}
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Status Selection Filter */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            Status
+          </span>
+          <Select
+            defaultValue={initialStatus}
+            onValueChange={(val) => handleFilterChange("status", val)}
+          >
+            <SelectTrigger className="w-[130px] h-9">
+              <SelectValue placeholder="All Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Reviews</SelectItem>
+              <SelectItem value="approved">Approved</SelectItem>
+              <SelectItem value="pending">Pending Approval</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Rating Selection Filter */}
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+            Rating
+          </span>
+          <Select
+            defaultValue={initialRating}
+            onValueChange={(val) => handleFilterChange("rating", val)}
+          >
+            <SelectTrigger className="w-[120px] h-9">
+              <SelectValue placeholder="All Ratings" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stars</SelectItem>
+              <SelectItem value="5">5 Stars ★</SelectItem>
+              <SelectItem value="4">4 Stars ★</SelectItem>
+              <SelectItem value="3">3 Stars ★</SelectItem>
+              <SelectItem value="2">2 Stars ★</SelectItem>
+              <SelectItem value="1">1 Star ★</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+### 5.2 Reviews Table Skeleton Loader
+
+#### [NEW] [reviewsTableSkeleton.tsx](file:///c:/Users/user/Downloads/Video/Vishwas/food_app/src/components/admin/features/reviews/reviewsTableSkeleton.tsx)
+
+```tsx
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+export function ReviewsTableSkeleton() {
+  return (
+    <div className="rounded-md border bg-card overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[200px]">User</TableHead>
+            <TableHead className="w-[150px]">Food Item</TableHead>
+            <TableHead className="w-[120px]">Rating</TableHead>
+            <TableHead>Comment</TableHead>
+            <TableHead className="w-[120px]">Submitted</TableHead>
+            <TableHead className="w-[100px]">Status</TableHead>
+            <TableHead className="w-[60px] text-right"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {Array.from({ length: 5 }).map((_, rowIndex) => (
+            <TableRow key={rowIndex}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="size-8 rounded-full shrink-0" />
+                  <div className="space-y-1 w-full">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-32" />
+                  </div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-20" />
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="size-3.5 rounded-full" />
+                  ))}
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-[80%]" />
+                  <Skeleton className="h-3.5 w-[50%]" />
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-16" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-6 w-20 rounded-full" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="size-8 rounded-md ml-auto" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+```
+
 ---
 
 ### 6. Admin Page Integration
@@ -1213,17 +1434,8 @@ import {
 } from "@/actions/admin-reviews";
 import { ReviewMetricsCards } from "@/components/admin/features/reviews/reviewMetricsCards";
 import { ReviewsTable } from "@/components/admin/features/reviews/reviewsTable";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Search } from "lucide-react";
-import { Link } from "next-view-transitions";
-import { Button } from "@/components/ui/button";
+import { ReviewFilter } from "@/components/admin/features/reviews/reviewFilter";
+import { PaginationControls } from "@/components/admin/features/orders/paginationControls";
 
 export const metadata: Metadata = {
   title: "Product Reviews Moderation | Quick Food Admin",
@@ -1260,8 +1472,6 @@ export default async function ReviewsModerationPage({
     fetchAdminReviewMetrics(),
   ]);
 
-  const totalPages = Math.ceil(reviewsData.total / pageSize);
-
   return (
     <div className="space-y-6">
       {/* Header and Title */}
@@ -1278,142 +1488,24 @@ export default async function ReviewsModerationPage({
       {/* Overview Statistics Cards */}
       <ReviewMetricsCards metrics={metrics} />
 
-      {/* Control Filter Bar */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center justify-between bg-card p-4 rounded-lg border">
-        {/* Search Input Box */}
-        <form
-          className="relative flex-1 max-w-sm"
-          method="GET"
-          action="/admin/reviews"
-        >
-          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-          <Input
-            name="search"
-            defaultValue={search}
-            placeholder="Search reviews, users, or items..."
-            className="pl-9 h-9"
-          />
-          {/* Preserve existing filters */}
-          {rating !== "all" && (
-            <input type="hidden" name="rating" value={rating} />
-          )}
-          {status !== "all" && (
-            <input type="hidden" name="status" value={status} />
-          )}
-        </form>
-
-        {/* Filter Selection Dropdowns */}
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Status Selection Filter */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Status
-            </span>
-            <form method="GET" action="/admin/reviews" id="status-form">
-              {search && <input type="hidden" name="search" value={search} />}
-              {rating !== "all" && (
-                <input type="hidden" name="rating" value={rating} />
-              )}
-              <Select
-                name="status"
-                defaultValue={status}
-                onValueChange={(val) => {
-                  const queryParams = new URLSearchParams({
-                    page: "1",
-                    search,
-                    rating,
-                    status: val,
-                  });
-                  window.location.search = queryParams.toString();
-                }}
-              >
-                <SelectTrigger className="w-[130px] h-9">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Reviews</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="pending">Pending Approval</SelectItem>
-                </SelectContent>
-              </Select>
-            </form>
-          </div>
-
-          {/* Rating Selection Filter */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-              Rating
-            </span>
-            <Select
-              name="rating"
-              defaultValue={rating}
-              onValueChange={(val) => {
-                const queryParams = new URLSearchParams({
-                  page: "1",
-                  search,
-                  rating: val,
-                  status,
-                });
-                window.location.search = queryParams.toString();
-              }}
-            >
-              <SelectTrigger className="w-[120px] h-9">
-                <SelectValue placeholder="All Ratings" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Stars</SelectItem>
-                <SelectItem value="5">5 Stars ★</SelectItem>
-                <SelectItem value="4">4 Stars ★</SelectItem>
-                <SelectItem value="3">3 Stars ★</SelectItem>
-                <SelectItem value="2">2 Stars ★</SelectItem>
-                <SelectItem value="1">1 Star ★</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </div>
+      {/* Reusable Client-Side Filters & Search */}
+      <ReviewFilter
+        initialSearch={search}
+        initialRating={rating}
+        initialStatus={status}
+      />
 
       {/* Interactive Main Reviews List Table */}
-      <div className="min-height-[400px]">
+      <div className="min-h-[400px]">
         <ReviewsTable initialReviews={reviewsData.reviews} />
       </div>
 
-      {/* Numbered URL Pagination Controls */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border bg-card px-4 py-3 rounded-lg">
-          <div className="text-xs text-muted-foreground">
-            Showing Page{" "}
-            <span className="font-semibold text-foreground">{page}</span> of{" "}
-            <span className="font-semibold text-foreground">{totalPages}</span>{" "}
-            (Total{" "}
-            <span className="font-semibold text-foreground">
-              {reviewsData.total}
-            </span>{" "}
-            reviews)
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" disabled={page <= 1} asChild>
-              <Link
-                href={`/admin/reviews?page=${page - 1}&search=${search}&rating=${rating}&status=${status}`}
-              >
-                Previous
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= totalPages}
-              asChild
-            >
-              <Link
-                href={`/admin/reviews?page=${page + 1}&search=${search}&rating=${rating}&status=${status}`}
-              >
-                Next
-              </Link>
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Reusable Numbered URL Pagination Controls */}
+      <PaginationControls
+        totalItems={reviewsData.total}
+        currentPage={page}
+        pageSize={pageSize}
+      />
     </div>
   );
 }

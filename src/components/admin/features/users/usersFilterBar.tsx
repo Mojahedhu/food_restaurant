@@ -28,6 +28,9 @@ export function UsersFilterBar({ roles }: UsersFilterBarProps) {
   const sortOrder = searchParams.get("sortOrder") || "desc";
 
   useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    if (search === urlSearch) return;
+
     const delayDebounce = setTimeout(() => {
       // eslint-disable-next-line react-hooks/immutability
       updateUrlParam("search", search);
