@@ -383,6 +383,7 @@ export const REVIEWS_STATIC_BY_FOOD_ID_QUERY = groq`
   rating,
   comment,
   approved,
+  adminReply,
   
   food,
   "foodName": food->name,

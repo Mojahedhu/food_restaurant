@@ -1,10 +1,11 @@
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
-import { Category } from "../../../../../../sanity.types";
+
 import { ChefHat, Type } from "lucide-react";
+import { CategoryWithCount } from "../../../../../../types/sanityTypes";
 
 interface CategoryDetailsHeroProps {
-  categoryDetails: Category;
+  categoryDetails: CategoryWithCount;
 }
 
 function CategoryDetailsHero({ categoryDetails }: CategoryDetailsHeroProps) {

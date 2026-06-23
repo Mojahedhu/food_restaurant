@@ -74,7 +74,7 @@ export default defineType({
       title: "Phone Number",
       type: "string",
       validation: (Rule) =>
-        Rule.regex(/^[0-9]{10}$/, {
+        Rule.regex(/^\+?[0-9]{10,}$/, {
           name: "phoneNumber",
         }),
     }),

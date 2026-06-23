@@ -18,6 +18,7 @@ import type {
   internalGroqTypeReferenceTo,
   UserImage,
   ReactionType,
+  Post,
 } from "../sanity.types";
 import { PortableTextBlock, SanityImageAssetDocument } from "next-sanity";
 
@@ -369,6 +370,16 @@ export type PostBodyBlock =
   | PortableTextImageBlock
   | TwoUpImagesBlock;
 
+export type PostCard = Pick<
+  Post,
+  "title" | "mainImage" | "publishedAt" | "_id"
+> & {
+  categories?: PostCategory[];
+  author?: PostAuthor;
+  slug?: {
+    current?: string;
+  };
+};
 /**
  * Review and ReviewReaction type
  */
@@ -433,6 +444,7 @@ export interface ReviewStatic {
   rating: number;
   comment: string;
   approved: boolean;
+  adminReply?: string;
 
   _createdAt: string;
 }
@@ -485,6 +497,7 @@ export type SanityReview = {
   rating?: number;
   comment?: string;
   approved?: boolean;
+  adminReply?: string;
 
   _createdAt: string;
 
@@ -605,4 +618,20 @@ export interface ReviewDisplayState {
   isDisliked: boolean;
 
   pending: boolean;
+}
+
+/**
+ * =========================================================
+ * Category Type
+ * =========================================================
+ */
+
+/**
+ * Category with resolved slug
+ */
+export interface CategoryWithCount extends Omit<BaseCategory, "slug"> {
+  slug?: string;
+  itemsCount?: number;
+  itemCount?: number; // projected in CATEGORIES_QUERY
+  foodItems?: FoodWithDetails[];
 }

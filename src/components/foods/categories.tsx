@@ -1,4 +1,3 @@
-import { Category } from "../../../sanity.types";
 import { getCategories } from "@/lib/sanityFunctions";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
@@ -6,7 +5,7 @@ import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 
 const Categories = async () => {
-  const categories: Category[] = await getCategories();
+  const categories = await getCategories();
 
   if (!categories || categories.length === 0) {
     return null;

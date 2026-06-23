@@ -4,8 +4,8 @@ import {
   ALL_RESTAURANTS_QUERY,
   GET_RESTAURANT_BY_SLUG_QUERY,
 } from "../query";
-import { Restaurant } from "../../../sanity.types";
-import { Restaurant as RestaurantResponse } from "../../../types/sanityTypes";
+
+import { Restaurant } from "../../../types/sanityTypes";
 
 export async function getFeaturedRestaurants() {
   return await client.fetch<Restaurant[]>(FEATURED_RESTAURANTS_QUERY);
@@ -16,7 +16,7 @@ export async function getRestaurants() {
 }
 
 export async function getRestaurantBySlug(slug: string) {
-  return await client.fetch<RestaurantResponse>(GET_RESTAURANT_BY_SLUG_QUERY, {
+  return await client.fetch<Restaurant>(GET_RESTAURANT_BY_SLUG_QUERY, {
     slug,
   });
 }

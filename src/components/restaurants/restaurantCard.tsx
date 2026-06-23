@@ -3,8 +3,8 @@ import { Card, CardContent, CardTitle } from "../ui/card";
 import Image from "next/image";
 import { Badge } from "../ui/badge";
 import { Clock, MapPin, Star, Utensils } from "lucide-react";
-import { Restaurant } from "../../../sanity.types";
 import { urlFor } from "@/sanity/lib/image";
+import { Restaurant } from "../../../types/sanityTypes";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;

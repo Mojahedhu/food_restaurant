@@ -33,6 +33,15 @@ export function OrdersFilterBar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
+  useEffect(() => {
+    const urlSearch = searchParams.get("search") || "";
+    if (search !== urlSearch) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearch(urlSearch);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   const updateUrlParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", "1"); // Reset to page 1 on filter change

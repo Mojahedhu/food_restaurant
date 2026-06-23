@@ -1,6 +1,5 @@
-"use server";
 import { DashboardData } from "../types/dashboard";
-import { sanityFetch } from "./live";
+import { client } from "./client";
 
 const DASHBOARD_QUERY = `{
   "foodItemsCount": count(*[_type == "food"]),
@@ -45,9 +44,6 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   const sinceDate = new Date(
     Date.now() - 7 * 24 * 60 * 60 * 1000,
   ).toISOString();
-  const response = await sanityFetch({
-    query: DASHBOARD_QUERY,
-    params: { sinceDate },
-  });
-  return response.data as DashboardData;
+  const response = await client.fetch(DASHBOARD_QUERY, { sinceDate });
+  return response as DashboardData;
 }

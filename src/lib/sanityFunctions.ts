@@ -11,7 +11,12 @@ import {
   LATEST_POSTS_QUERY,
 } from "./query";
 import type { Banner, Category, Food, Post } from "@/../sanity.types";
-import { LatestPost, PostDetails } from "../../types/sanityTypes";
+import {
+  CategoryWithCount,
+  LatestPost,
+  PostCard,
+  PostDetails,
+} from "../../types/sanityTypes";
 import { sanityFetch } from "@/sanity/lib/live";
 
 //================================================================
@@ -28,9 +33,9 @@ export async function getBanners(): Promise<Banner[]> {
 /**
  * Get all active categories
  */
-export async function getCategories(): Promise<Category[]> {
+export async function getCategories(): Promise<CategoryWithCount[]> {
   const { data } = await sanityFetch({ query: CATEGORIES_WITH_COUNT_QUERY });
-  return data as Category[];
+  return data as CategoryWithCount[];
 }
 
 /**
@@ -44,12 +49,14 @@ export async function getAllCategories(): Promise<Category[]> {
 /**
  * Get category by slug with food item details
  */
-export async function getCategoryBySlug(slug: string): Promise<Category> {
+export async function getCategoryBySlug(
+  slug: string,
+): Promise<CategoryWithCount> {
   const { data } = await sanityFetch({
     query: GET_CATEGORY_BY_SLUG_QUERY,
     params: { slug },
   });
-  return data as Category;
+  return data as CategoryWithCount;
 }
 
 //================================================================
@@ -83,9 +90,9 @@ export async function getAvailableFoods(limit: number = 12): Promise<Food[]> {
 /**
  * Get all posts
  */
-export async function getAllPosts(): Promise<Post[]> {
+export async function getAllPosts(): Promise<PostCard[]> {
   const { data } = await sanityFetch({ query: ALL_POSTS_QUERY });
-  return data as Post[];
+  return data as PostCard[];
 }
 
 /**

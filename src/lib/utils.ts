@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge";
 import { User } from "../../types/sanityTypes";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityAsset } from "@sanity/image-url";
+import { UserImage } from "../../sanity.types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -37,13 +38,12 @@ export const delay = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
 export const getUserImage = (user: Partial<User>) => {
-  if (!user.image) return null;
+  if (!user) return null;
 
-  if (user.image.source === "url") {
+  if (user?.image?.source === "url") {
     return user.image.url;
   }
-
-  if (user.image.source === "asset") {
+  if (user?.image?.source === "asset") {
     return urlFor(user.image.asset!).url();
   }
 
@@ -92,5 +92,35 @@ export const getImageUrl = (imageSource?: SanityAsset | string) => {
     return urlFor(imageSource).url();
   } catch (e) {
     return `${e}`;
+  }
+};
+
+/*
+ * Helper function to forma payment method
+ */
+
+export const formatPaymentMethod = (method: string) => {
+  switch (method) {
+    case "online":
+      return "Online Payment (Stripe)";
+    case "cash":
+      return "Cash on Delivery";
+    default:
+      return method;
+  }
+};
+
+/*  Helper to colorize payment status
+ *  Usage: getPaymentStatusColor(status)
+ */
+export const getPaymentStatusColor = (status?: string) => {
+  switch (status) {
+    case "paid":
+      return "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-accent";
+    case "failed":
+      return "bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20";
+    case "pending":
+    default:
+      return "bg-amber-100/80 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border-amber-200 dark:border-amber-900/50";
   }
 };

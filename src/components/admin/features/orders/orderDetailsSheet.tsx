@@ -2,7 +2,13 @@
 
 import { useReducer, useEffect } from "react";
 import { OrderSummary } from "@/types/admin";
-import { cn, formatCurrency, getImageUrl } from "@/lib/utils";
+import {
+  cn,
+  formatCurrency,
+  formatPaymentMethod,
+  getImageUrl,
+  getPaymentStatusColor,
+} from "@/lib/utils";
 
 import {
   Sheet,
@@ -22,7 +28,9 @@ import {
 } from "@/components/ui/select";
 
 import {
+  DollarSign,
   Loader2,
+  LucideWallet,
   MapPin,
   Minus,
   Pencil,
@@ -30,9 +38,12 @@ import {
   Trash2,
   User,
   Utensils,
+  Wallet,
 } from "lucide-react";
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 // --- 1. Define the Reducer for Complex Local State ---
 
@@ -168,7 +179,7 @@ export function OrderDetailsSheet({
     0,
   );
   const currentTotal =
-    itemsTotal + (order?.deliveryFee || 0) + (order?.tax || 0);
+    itemsTotal + (order?.deliveryFee || 0) + itemsTotal * 0.05;
 
   const handleSave = async () => {
     if (!order || !onSave) return;
@@ -193,7 +204,7 @@ export function OrderDetailsSheet({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-md! flex flex-col h-full p-0 gap-0">
+      <SheetContent className="w-full sm:max-w-md! md:max-w-lg! lg:max-w-xl! flex flex-col h-full p-0 gap-0">
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <SheetHeader className="text-left">
             <SheetTitle className="text-2xl font-bold">
@@ -346,9 +357,9 @@ export function OrderDetailsSheet({
               <div className="text-sm font-semibold text-foreground">
                 Order Items
               </div>
-              <div className="text-amber-600 font-medium text-xs flex items-center gap-1">
-                <Pencil className="size-3" />
-                <span>Editable</span>
+              <div className="font-medium text-xs flex items-center gap-1">
+                <Pencil className="size-3 text-amber-600" />
+                <span className="text-primary">Editable</span>
               </div>
             </div>
 
@@ -452,6 +463,75 @@ export function OrderDetailsSheet({
                 );
               })}
             </div>
+            <Separator />
+            {/* Order Summary */}
+            <div className="flex gap-2">
+              <div className="flex justify-center items-start">
+                <DollarSign className="size-4" />
+              </div>
+              <div className="space-y-2 flex-1">
+                <div className="flex gap-4 items-center">
+                  <div className="text-sm font-semibold text-foreground">
+                    Order Summary
+                  </div>
+                  <div className="font-medium text-xs flex items-center gap-1">
+                    <Pencil className="size-3 text-amber-600" />
+                    <span className="text-primary">Editable</span>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <div>Subtotal</div>
+
+                  <div>{formatCurrency(itemsTotal)}</div>
+                </div>
+                <div className="flex justify-between">
+                  <div>Delivery Fee</div>
+
+                  <div>{formatCurrency(order?.deliveryFee || 0)}</div>
+                </div>
+                <div className="flex justify-between">
+                  <div>Taxes and fees</div>
+
+                  <Badge variant={"outline"} className="mr-4">
+                    {formatCurrency(itemsTotal * 0.05 || 0)}
+                  </Badge>
+                </div>
+                <Separator />
+                <div className="flex justify-between">
+                  <div className="font-semibold">Total:</div>
+
+                  <div className="font-semibold">
+                    {formatCurrency(currentTotal || 0)}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <Separator />
+            {/* Payment Info */}
+            <div className="flex gap-2">
+              <div className="flex justify-center items-start">
+                <LucideWallet className="size-4" />
+              </div>
+              <div className="space-y-2 flex-1">
+                <div className="font-semibold">
+                  <div>Payment Information</div>
+                </div>
+                <div className="">
+                  <span className="font-semibold text-[12px]">Method: </span>
+                  <span>{formatPaymentMethod(order?.paymentMethod || "")}</span>
+                </div>
+                <div className="text-[12px]">
+                  <span className="font-semibold">Payment Status: </span>
+                  <Badge
+                    variant={"outline"}
+                    className={getPaymentStatusColor(order.paymentStatus)}
+                  >
+                    {order?.paymentStatus}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            <Separator />
           </section>
         </div>
 

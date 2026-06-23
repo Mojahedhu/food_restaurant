@@ -69,6 +69,7 @@ export function PaginationControls({
 
         <div className="flex items-center gap-2">
           <Button
+            className="hover:cursor-pointer"
             variant="outline"
             size="icon"
             disabled={!hasPrevPage}
@@ -93,7 +94,7 @@ export function PaginationControls({
               <Button
                 key={pageNumber}
                 variant={pageNumber === currentPage ? "default" : "outline"}
-                className="size-9"
+                className="size-9 hover:cursor-pointer"
                 onClick={() => handlePageChange(pageNumber as number)}
               >
                 {pageNumber}
@@ -102,6 +103,7 @@ export function PaginationControls({
           })}
 
           <Button
+            className="hover:cursor-pointer"
             variant="outline"
             size="icon"
             disabled={!hasNextPage}

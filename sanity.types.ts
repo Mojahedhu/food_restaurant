@@ -12,57 +12,88 @@
  * ---------------------------------------------------------------------------------
  */
 
+export declare const internalGroqTypeReferenceTo: unique symbol;
+
 // Source: schema.json
+export type ReviewReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "review";
+};
+
+export type FoodReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "food";
+};
+
+export type ReviewMetrics = {
+  _id: string;
+  _type: "reviewMetrics";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  review?: ReviewReference;
+  food?: FoodReference;
+  likesCount?: number;
+  dislikesCount?: number;
+};
+
+export type UserReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "user";
+};
+
+export type ReviewReaction = {
+  _id: string;
+  _type: "reviewReaction";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  review?: ReviewReference;
+  food?: FoodReference;
+  user?: UserReference;
+  type?: "like" | "dislike";
+  mutationId?: string;
+};
+
 export type Review = {
   _id: string;
   _type: "review";
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  food?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "food";
-  };
-  user?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "user";
-  };
+  food?: FoodReference;
+  user?: UserReference;
   rating?: number;
   approved?: boolean;
   comment?: string;
-  // denormalized counters
-  likesCount: number;
-  dislikesCount: number;
-  createdAt?: string;
 };
 
-export type ReactionType = "like" | "dislike";
+export type SanityImageAssetReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+};
 
-export interface ReviewReaction {
-  _id: string;
-  _type: "reviewReaction";
-  _createdAt?: string;
-  _updatedAt?: string;
-  _rev?: string;
+export type OpeningHoursReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "openingHours";
+};
 
-  review: {
-    _type: "reference";
-    _ref: string;
-  };
-
-  user: {
-    _type: "reference";
-    _ref: string;
-  };
-
-  type: ReactionType;
-
-  createdAt: string;
-}
+export type CategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "category";
+};
 
 export type Restaurant = {
   _id: string;
@@ -74,12 +105,7 @@ export type Restaurant = {
   slug?: Slug;
   description?: string;
   image?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
@@ -92,27 +118,18 @@ export type Restaurant = {
   };
   phone?: string;
   email?: string;
-  openingHours?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "openingHours";
-  };
+  openingHours?: OpeningHoursReference;
   AllFoodItemsAvailable?: boolean;
-  foodItems?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "food";
-  }>;
-  categories?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "category";
-  }>;
+  foodItems?: Array<
+    {
+      _key: string;
+    } & FoodReference
+  >;
+  categories?: Array<
+    {
+      _key: string;
+    } & CategoryReference
+  >;
   rating?: number;
   totalReviews?: number;
   isActive?: boolean;
@@ -121,8 +138,6 @@ export type Restaurant = {
   estimatedDeliveryTime?: number;
   isFeatured?: boolean;
   order?: number;
-  foodItemsCount?: number;
-  categoriesCount?: number;
 };
 
 export type SanityImageCrop = {
@@ -147,6 +162,20 @@ export type Slug = {
   source?: string;
 };
 
+export type AuthorReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "author";
+};
+
+export type BlogCategoryReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "blogCategory";
+};
+
 export type Post = {
   _id: string;
   _type: "post";
@@ -155,45 +184,19 @@ export type Post = {
   _rev: string;
   title?: string;
   slug?: Slug;
-  author?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    name?: string;
-    image?: {
-      asset?: {
-        _ref: string;
-        _type: "reference";
-        _weak?: boolean;
-        [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-      };
-      media?: unknown;
-      hotspot?: SanityImageHotspot;
-      crop?: SanityImageCrop;
-      _type: "image";
-    };
-    [internalGroqTypeReferenceTo]?: "author";
-  };
+  author?: AuthorReference;
   mainImage?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
   };
-  categories?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    title?: string;
-    [internalGroqTypeReferenceTo]?: "blogCategory";
-  }>;
+  categories?: Array<
+    {
+      _key: string;
+    } & BlogCategoryReference
+  >;
   isFeatured?: boolean;
   publishedAt?: string;
   body?: Array<
@@ -224,12 +227,7 @@ export type Post = {
         _key: string;
       }
     | {
-        asset?: {
-          _ref: string;
-          _type: "reference";
-          _weak?: boolean;
-          [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-        };
+        asset?: SanityImageAssetReference;
         media?: unknown;
         hotspot?: SanityImageHotspot;
         crop?: SanityImageCrop;
@@ -238,24 +236,14 @@ export type Post = {
       }
     | {
         image1?: {
-          asset?: {
-            _ref: string;
-            _type: "reference";
-            _weak?: boolean;
-            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-          };
+          asset?: SanityImageAssetReference;
           media?: unknown;
           hotspot?: SanityImageHotspot;
           crop?: SanityImageCrop;
           _type: "image";
         };
         image2?: {
-          asset?: {
-            _ref: string;
-            _type: "reference";
-            _weak?: boolean;
-            [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-          };
+          asset?: SanityImageAssetReference;
           media?: unknown;
           hotspot?: SanityImageHotspot;
           crop?: SanityImageCrop;
@@ -268,6 +256,13 @@ export type Post = {
   >;
 };
 
+export type OrderStatusReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "orderStatus";
+};
+
 export type Order = {
   _id: string;
   _type: "order";
@@ -275,12 +270,7 @@ export type Order = {
   _updatedAt: string;
   _rev: string;
   orderNumber?: string;
-  user?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "user";
-  };
+  user?: UserReference;
   userEmail?: string;
   userName?: string;
   items?: Array<{
@@ -312,12 +302,7 @@ export type Order = {
   originalTotal?: number;
   paymentMethod?: "online" | "cod";
   paymentStatus?: "pending" | "paid" | "failed";
-  status?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "orderStatus";
-  };
+  status?: OrderStatusReference;
   estimatedDeliveryTime?: string;
   notes?: string;
   StripeSessionId?: string;
@@ -374,31 +359,22 @@ export type Menu = {
   slug?: Slug;
   description?: string;
   Image?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
   };
-  categories?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "category";
-  }>;
-  foodItems?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "food";
-  }>;
+  categories?: Array<
+    {
+      _key: string;
+    } & CategoryReference
+  >;
+  foodItems?: Array<
+    {
+      _key: string;
+    } & FoodReference
+  >;
   availableFrom?: string;
   availableTo?: string;
   availableDays?: Array<string>;
@@ -429,6 +405,27 @@ export type FoodVariety = {
   Order?: number;
 };
 
+export type FoodVarietyReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "foodVariety";
+};
+
+export type SizeReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "size";
+};
+
+export type IngredientReference = {
+  _ref: string;
+  _type: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "ingredient";
+};
+
 export type Food = {
   _id: string;
   _type: "food";
@@ -439,53 +436,38 @@ export type Food = {
   slug?: Slug;
   description?: string;
   price?: number;
-  category?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "category";
-  };
-  varieties?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "foodVariety";
-  }>;
+  category?: CategoryReference;
+  varieties?: Array<
+    {
+      _key: string;
+    } & FoodVarietyReference
+  >;
   enableAllSizes?: boolean;
   sizes?: Array<{
-    size?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "size";
-    };
+    size?: SizeReference;
     _key: string;
   }>;
   images?: Array<{
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
     _type: "image";
     _key: string;
   }>;
-  ingredients?: Array<{
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    _key: string;
-    [internalGroqTypeReferenceTo]?: "ingredient";
-  }>;
+  ingredients?: Array<
+    {
+      _key: string;
+    } & IngredientReference
+  >;
   PreparationTime?: number;
   spiceLevel?: "mild" | "medium" | "hot" | "extra-Hot";
   available?: boolean;
   featured?: boolean;
+  ratingCount?: number;
+  ratingSum?: number;
+  weightedRating?: number;
+  ratingAverage?: number;
   order?: number;
 };
 
@@ -512,12 +494,7 @@ export type Category = {
   slug?: Slug;
   description?: string;
   image?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
@@ -525,8 +502,6 @@ export type Category = {
   };
   order?: number;
   isActive?: boolean;
-  itemsCount?: number;
-  foodItems: FoodWithDetails[];
 };
 
 export type Author = {
@@ -535,21 +510,11 @@ export type Author = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  user?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "user";
-  };
+  user?: UserReference;
   name?: string;
   slug?: Slug;
   image?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
@@ -564,12 +529,7 @@ export type Address = {
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
-  user?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "user";
-  };
+  user?: UserReference;
   type?: "home" | "work" | "other";
   label?: string;
   street?: string;
@@ -583,17 +543,25 @@ export type Address = {
   isDefault?: boolean;
 };
 
+export type UserRoleReference = {
+  _id?: string;
+  name?: string;
+  slug?: string;
+  _ref?: string;
+  _type?: "reference";
+  _weak?: boolean;
+  [internalGroqTypeReferenceTo]?: "userRole";
+};
+
 export type UserImage = {
   source?: "asset" | "url";
-
   asset?: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
     _type: "image";
-    asset: {
-      _ref: string;
-      _type: "reference";
-    };
   };
-
   url?: string;
 };
 
@@ -606,20 +574,23 @@ export type User = {
   name?: string;
   email?: string;
   password?: string;
-  image?: UserImage;
-  bio?: string;
+  image?: {
+    source?: "asset" | "url";
+    asset?: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    };
+    url?: string;
+  };
   emailVerified?: string;
   phoneNumber?: string;
+  bio?: string;
   provider?: "credentials" | "google";
-  role?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "userRole";
-  };
-
+  role?: UserRoleReference;
   createdAt?: string;
-
   walletBalance?: number;
 };
 
@@ -657,12 +628,7 @@ export type Banner = {
   title?: string;
   description?: string;
   bannerImage?: {
-    asset?: {
-      _ref: string;
-      _type: "reference";
-      _weak?: boolean;
-      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
-    };
+    asset?: SanityImageAssetReference;
     media?: unknown;
     hotspot?: SanityImageHotspot;
     crop?: SanityImageCrop;
@@ -670,7 +636,7 @@ export type Banner = {
   };
   buttonTitle?: string;
   buttonHref?: string;
-  Active?: boolean;
+  active?: boolean;
   order?: number;
 };
 
@@ -707,6 +673,7 @@ export type SanityImageMetadata = {
   palette?: SanityImagePalette;
   lqip?: string;
   blurHash?: string;
+  thumbHash?: string;
   hasAlpha?: boolean;
   isOpaque?: boolean;
 };
@@ -771,23 +738,38 @@ export type Geopoint = {
 };
 
 export type AllSanitySchemaTypes =
+  | ReviewReference
+  | FoodReference
+  | ReviewMetrics
+  | UserReference
+  | ReviewReaction
   | Review
+  | SanityImageAssetReference
+  | OpeningHoursReference
+  | CategoryReference
   | Restaurant
   | SanityImageCrop
   | SanityImageHotspot
   | Slug
+  | AuthorReference
+  | BlogCategoryReference
   | Post
+  | OrderStatusReference
   | Order
   | OrderStatus
   | OpeningHours
   | Menu
   | Ingredient
   | FoodVariety
+  | FoodVarietyReference
+  | SizeReference
+  | IngredientReference
   | Food
   | Size
   | Category
   | Author
   | Address
+  | UserRoleReference
   | User
   | UserRole
   | BlogCategory
@@ -800,17 +782,826 @@ export type AllSanitySchemaTypes =
   | SanityAssetSourceData
   | SanityImageAsset
   | Geopoint;
-export declare const internalGroqTypeReferenceTo: unique symbol;
-// Source: ./src/lib/query.ts
+
+// Source: src/actions/admin-orders.ts
+// Variable: query
+// Query: *[_type == "order"] | order(_createdAt desc) {       _id,        _createdAt,        orderNumber,        status,        total,        paymentStatus,        userName,        userEmail,        user,        items,        deliveryAddress,        subtotal,        deliveryFee,        tax      }[0...50]
+export type QueryResult = Array<{
+  _id: string;
+  _createdAt: string;
+  orderNumber: string | null;
+  status: OrderStatusReference | null;
+  total: number | null;
+  paymentStatus: "failed" | "paid" | "pending" | null;
+  userName: string | null;
+  userEmail: string | null;
+  user: UserReference | null;
+  items: Array<{
+    foodId?: string;
+    name?: string;
+    image?: string;
+    price?: number;
+    quantity?: number;
+    size?: string;
+    variety?: string;
+    _key: string;
+  }> | null;
+  deliveryAddress: {
+    type?: string;
+    label?: string;
+    street?: string;
+    apartment?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+    phone?: string;
+    instructions?: string;
+  } | null;
+  subtotal: number | null;
+  deliveryFee: number | null;
+  tax: number | null;
+}>;
+
+// Source: src/actions/admin-orders.ts
+// Variable: countQuery
+// Query: count(*[_type == "order"])
+export type CountQueryResult = number;
+
+// Source: src/actions/admin-orders.ts
+// Variable: dataQuery
+// Query: *[_type == "order"] | order(_createdAt desc) {        _id,        _createdAt,        orderNumber,        status,        total,        paymentStatus,        userName,        userEmail,        paymentMethod,        items      }[$start...$end]
+export type DataQueryResult = Array<{
+  _id: string;
+  _createdAt: string;
+  orderNumber: string | null;
+  status: OrderStatusReference | null;
+  total: number | null;
+  paymentStatus: "failed" | "paid" | "pending" | null;
+  userName: string | null;
+  userEmail: string | null;
+  paymentMethod: "cod" | "online" | null;
+  items: Array<{
+    foodId?: string;
+    name?: string;
+    image?: string;
+    price?: number;
+    quantity?: number;
+    size?: string;
+    variety?: string;
+    _key: string;
+  }> | null;
+}>;
+
+// Source: src/lib/query.ts
 // Variable: BANNERS_QUERY
 // Query: *[_type == "banner" && active == true] | order(order asc) {    _id,    title,    description,    bannerImage,    buttonTitle,    buttonHref,    order  }
-export type BANNERS_QUERYResult = Array<never>;
+export type BANNERS_QUERY_RESULT = Array<{
+  _id: string;
+  title: string | null;
+  description: string | null;
+  bannerImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  buttonTitle: string | null;
+  buttonHref: string | null;
+  order: number | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: FEATURED_FOODS_QUERY
+// Query: *[_type == "food" && featured == true && available == true]   | order(order asc) [0...8] {    _id,    name,    "slug": slug.current,    description,    "basePrice": price,    images,    preparationTime,    spiceLevel,    available,    featured,    averageRating,    totalReviews,    category->{      _id,      name,      "slug": slug.current    },    varieties[]->{      _id,      name,    }  }
+export type FEATURED_FOODS_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  description: string | null;
+  basePrice: number | null;
+  images: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }> | null;
+  preparationTime: null;
+  spiceLevel: "extra-Hot" | "hot" | "medium" | "mild" | null;
+  available: true;
+  featured: true;
+  averageRating: null;
+  totalReviews: null;
+  category: {
+    _id: string;
+    name: string | null;
+    slug: string | null;
+  } | null;
+  varieties: Array<{
+    _id: string;
+    name: string | null;
+  }> | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: CATEGORIES_QUERY
+// Query: *[_type == "category" && isActive == true] | order(order asc) {    _id,    name,    "slug": slug.current,    image,    "itemCount": count(*[_type == "food" && references(^._id)])  }
+export type CATEGORIES_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  image: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  itemCount: number;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: CATEGORIES_WITH_COUNT_QUERY
+// Query: *[_type == "category" && isActive == true] | order(order asc) [0...6] {    _id,    name,    "slug": slug.current,    image,    "itemsCount": count(*[_type == "food" && references(^._id)])  }
+export type CATEGORIES_WITH_COUNT_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  image: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  itemsCount: number;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: GET_CATEGORY_BY_SLUG_QUERY
+// Query: *[_type == "category" && slug.current == $slug][0] {    _id,    name,    "slug": slug.current,    image,    description,    "itemsCount": count(*[_type == "food" && references(^._id)]),    "foodItems": *[_type == "food" && references(^._id)] | order(order asc) {      _id,      name,      "slug": slug.current,      description,      "basePrice": price,      images,      preparationTime,      spiceLevel,      available,      featured,      averageRating,      totalReviews,      category->{        _id,        name,        "slug": slug.current      },      varieties[]->{        _id,        name,      }    }  }
+export type GET_CATEGORY_BY_SLUG_QUERY_RESULT = {
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  image: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  description: string | null;
+  itemsCount: number;
+  foodItems: Array<{
+    _id: string;
+    name: string | null;
+    slug: string | null;
+    description: string | null;
+    basePrice: number | null;
+    images: Array<{
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }> | null;
+    preparationTime: null;
+    spiceLevel: "extra-Hot" | "hot" | "medium" | "mild" | null;
+    available: boolean | null;
+    featured: boolean | null;
+    averageRating: null;
+    totalReviews: null;
+    category: {
+      _id: string;
+      name: string | null;
+      slug: string | null;
+    } | null;
+    varieties: Array<{
+      _id: string;
+      name: string | null;
+    }> | null;
+  }>;
+} | null;
+
+// Source: src/lib/query.ts
+// Variable: SEARCH_FOODS_QUERY
+// Query: *[_type == "food" && available == true && (      name match $query + "*" ||      description match $query + "*" ||      category->name match $query + "*"     )] | order(name asc) [0...10] {      _id,      name,      "slug": slug.current,      description,      basePrice,      images,      price,      averageRating,      totalReviews,      category->{        _id,        name,        "slug": slug.current      }    }
+export type SEARCH_FOODS_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  description: string | null;
+  basePrice: null;
+  images: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }> | null;
+  price: number | null;
+  averageRating: null;
+  totalReviews: null;
+  category: {
+    _id: string;
+    name: string | null;
+    slug: string | null;
+  } | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: FEATURED_FOODS_SEARCH_QUERY
+// Query: *[_type == "food" && featured == true && available == true]     | order(name asc)[0...6]{      _id,      name,      "slug": slug.current,      description,      basePrice,      images,      averageRating,      totalReviews,      category->{        _id,        name,        "slug": slug.current      }    }
+export type FEATURED_FOODS_SEARCH_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  description: string | null;
+  basePrice: null;
+  images: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }> | null;
+  averageRating: null;
+  totalReviews: null;
+  category: {
+    _id: string;
+    name: string | null;
+    slug: string | null;
+  } | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: GET_FOOD_BY_SLUG_QUERY
+// Query: *[_type == "food" && slug.current == $slug][0] {    _id,    name,    "slug": slug.current,    description,    "basePrice": price,    images,    "preparationTime": PreparationTime,    spiceLevel,    available,    "ingredients":ingredients[]->{      name,      _id,    },    "sizes":sizes[]{      _key,      "size":size->{        name,        _id,      },    },    featured,     // Dynamic average rating   "averageRating": coalesce(    math::avg(      *[        _type == "review" &&        food._ref == ^._id &&        approved == true      ].rating    ),    0    ),     "totalReviews": count(    *[    _type == "review" &&    food._ref == ^._id &&    approved == true    ]    ),    category->{      _id,      name,      "slug": slug.current    },    varieties[]->{      _id,      name,    }  }
+export type GET_FOOD_BY_SLUG_QUERY_RESULT = {
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  description: string | null;
+  basePrice: number | null;
+  images: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }> | null;
+  preparationTime: number | null;
+  spiceLevel: "extra-Hot" | "hot" | "medium" | "mild" | null;
+  available: boolean | null;
+  ingredients: Array<{
+    name: string | null;
+    _id: string;
+  }> | null;
+  sizes: Array<{
+    _key: string;
+    size: {
+      name: string | null;
+      _id: string;
+    } | null;
+  }> | null;
+  featured: boolean | null;
+  averageRating: number | 0;
+  totalReviews: number;
+  category: {
+    _id: string;
+    name: string | null;
+    slug: string | null;
+  } | null;
+  varieties: Array<{
+    _id: string;
+    name: string | null;
+  }> | null;
+} | null;
+
+// Source: src/lib/query.ts
+// Variable: GET_FOOD_BY_CATEGORY_QUERY
+// Query: *[_type == "food" && category._ref == $categoryId && _id != $excludeFoodId] {    _id,    name,    "slug": slug.current,    description,    price,    images,    averageRating,    "totalReviews": count(    *[    _type == "review" &&    food._ref == ^._id &&    approved == true    ]    ),    category->{      _id,      name,      "slug": slug.current    }  }
+export type GET_FOOD_BY_CATEGORY_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  slug: string | null;
+  description: string | null;
+  price: number | null;
+  images: Array<{
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    _key: string;
+  }> | null;
+  averageRating: null;
+  totalReviews: number;
+  category: {
+    _id: string;
+    name: string | null;
+    slug: string | null;
+  } | null;
+}>;
+
+export type ReactionType = "like" | "dislike";
+
+// Source: src/lib/query.ts
+// Variable: FEATURED_POSTS_QUERY
+// Query: *[_type == "post" && isFeatured == true]   | order(publishedAt desc) [0...4] {  _id,  title,  slug,  mainImage,  publishedAt,  author->{_id, name, image, bio},  categories[]->{_id, title, slug}}
+export type FEATURED_POSTS_QUERY_RESULT = Array<{
+  _id: string;
+  title: string | null;
+  slug: Slug | null;
+  mainImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  publishedAt: string | null;
+  author: {
+    _id: string;
+    name: string | null;
+    image: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+    bio: string | null;
+  } | null;
+  categories: Array<{
+    _id: string;
+    title: string | null;
+    slug: Slug | null;
+  }> | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: LATEST_POSTS_QUERY
+// Query: *[_type == "post"]   | order(publishedAt desc) [0...4] {  _id,  title,  "slug": slug.current,  mainImage,  publishedAt,}
+export type LATEST_POSTS_QUERY_RESULT = Array<{
+  _id: string;
+  title: string | null;
+  slug: string | null;
+  mainImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  publishedAt: string | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: ALL_POSTS_QUERY
+// Query: *[_type == "post"]   | order(publishedAt desc) {  _id,  title,  slug,  mainImage,  publishedAt,  author->{ _id, name, image, bio},  categories[]->{_id, title, slug}}
+export type ALL_POSTS_QUERY_RESULT = Array<{
+  _id: string;
+  title: string | null;
+  slug: Slug | null;
+  mainImage: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  publishedAt: string | null;
+  author: {
+    _id: string;
+    name: string | null;
+    image: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+    bio: string | null;
+  } | null;
+  categories: Array<{
+    _id: string;
+    title: string | null;
+    slug: Slug | null;
+  }> | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: GET_POST_DETAILS_BY_SLUG_QUERY
+// Query: *[_type == "post" && slug.current == $slug][0]{    _id,    _type,    _createdAt,    _updatedAt,    title,    "slug": slug.current,    isFeatured,    publishedAt,    author->{      _id,      name,      image,      bio    },    mainImage{      ...,      alt,      asset->    },    categories[]->{      _id,      title,      "slug": slug.current    },    body[]{      ...,      _type == "image" => {        ...,        asset->      },      _type == "twoUpImages" => {        ...,        image1{          ...,          asset->        },        image2{          ...,          asset->        }      }    }  }
+export type GET_POST_DETAILS_BY_SLUG_QUERY_RESULT = {
+  _id: string;
+  _type: "post";
+  _createdAt: string;
+  _updatedAt: string;
+  title: string | null;
+  slug: string | null;
+  isFeatured: boolean | null;
+  publishedAt: string | null;
+  author: {
+    _id: string;
+    name: string | null;
+    image: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+    bio: string | null;
+  } | null;
+  mainImage: {
+    asset: {
+      _id: string;
+      _type: "sanity.imageAsset";
+      _createdAt: string;
+      _updatedAt: string;
+      _rev: string;
+      originalFilename?: string;
+      label?: string;
+      title?: string;
+      description?: string;
+      altText?: string;
+      sha1hash?: string;
+      extension?: string;
+      mimeType?: string;
+      size?: number;
+      assetId?: string;
+      uploadId?: string;
+      path?: string;
+      url?: string;
+      metadata?: SanityImageMetadata;
+      source?: SanityAssetSourceData;
+    } | null;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+    alt: null;
+  } | null;
+  categories: Array<{
+    _id: string;
+    title: string | null;
+    slug: string | null;
+  }> | null;
+  body: Array<
+    | {
+        children?: Array<{
+          marks?: Array<string>;
+          text?: string;
+          _type: "span";
+          _key: string;
+        }>;
+        style?:
+          | "blockquote"
+          | "h1"
+          | "h2"
+          | "h3"
+          | "h4"
+          | "h5"
+          | "h6"
+          | "normal";
+        listItem?: "bullet" | "number";
+        markDefs?: Array<{
+          href?: string;
+          _type: "link";
+          _key: string;
+        }>;
+        level?: number;
+        _type: "block";
+        _key: string;
+      }
+    | {
+        asset: {
+          _id: string;
+          _type: "sanity.imageAsset";
+          _createdAt: string;
+          _updatedAt: string;
+          _rev: string;
+          originalFilename?: string;
+          label?: string;
+          title?: string;
+          description?: string;
+          altText?: string;
+          sha1hash?: string;
+          extension?: string;
+          mimeType?: string;
+          size?: number;
+          assetId?: string;
+          uploadId?: string;
+          path?: string;
+          url?: string;
+          metadata?: SanityImageMetadata;
+          source?: SanityAssetSourceData;
+        } | null;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+        _key: string;
+      }
+    | {
+        image1: {
+          asset: {
+            _id: string;
+            _type: "sanity.imageAsset";
+            _createdAt: string;
+            _updatedAt: string;
+            _rev: string;
+            originalFilename?: string;
+            label?: string;
+            title?: string;
+            description?: string;
+            altText?: string;
+            sha1hash?: string;
+            extension?: string;
+            mimeType?: string;
+            size?: number;
+            assetId?: string;
+            uploadId?: string;
+            path?: string;
+            url?: string;
+            metadata?: SanityImageMetadata;
+            source?: SanityAssetSourceData;
+          } | null;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        image2: {
+          asset: {
+            _id: string;
+            _type: "sanity.imageAsset";
+            _createdAt: string;
+            _updatedAt: string;
+            _rev: string;
+            originalFilename?: string;
+            label?: string;
+            title?: string;
+            description?: string;
+            altText?: string;
+            sha1hash?: string;
+            extension?: string;
+            mimeType?: string;
+            size?: number;
+            assetId?: string;
+            uploadId?: string;
+            path?: string;
+            url?: string;
+            metadata?: SanityImageMetadata;
+            source?: SanityAssetSourceData;
+          } | null;
+          media?: unknown;
+          hotspot?: SanityImageHotspot;
+          crop?: SanityImageCrop;
+          _type: "image";
+        } | null;
+        caption?: string;
+        _type: "twoUpImages";
+        _key: string;
+      }
+  > | null;
+} | null;
+
+// Source: src/lib/query.ts
+// Variable: ADDRESSES_QUERY
+// Query: *[_type == "address" && user._ref == $userId]{      _id,      type,      label,      street,      apartment,      city,      state,      zipCode,      phone,      instructions,      isDefault     }
+export type ADDRESSES_QUERY_RESULT = Array<{
+  _id: string;
+  type: "home" | "other" | "work" | null;
+  label: string | null;
+  street: string | null;
+  apartment: string | null;
+  city: string | null;
+  state: string | null;
+  zipCode: string | null;
+  phone: string | null;
+  instructions: string | null;
+  isDefault: boolean | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: REVIEWS_STATIC_BY_FOOD_ID_QUERY
+// Query: *[_type == "review" && food._ref == $foodId && approved == true]| order(createdAt desc) {  _id,  _type,  _rev,  _createdAt,  _updatedAt,  rating,  comment,  approved,    food,  "foodName": food->name,  "user": user->{    _id,    name,    image  },}
+export type REVIEWS_STATIC_BY_FOOD_ID_QUERY_RESULT = Array<{
+  _id: string;
+  _type: "review";
+  _rev: string;
+  _createdAt: string;
+  _updatedAt: string;
+  rating: number | null;
+  comment: string | null;
+  approved: boolean | null;
+  food: FoodReference | null;
+  foodName: string | null;
+  user: {
+    _id: string;
+    name: string | null;
+    image: {
+      source?: "asset" | "url";
+      asset?: {
+        asset?: SanityImageAssetReference;
+        media?: unknown;
+        hotspot?: SanityImageHotspot;
+        crop?: SanityImageCrop;
+        _type: "image";
+      };
+      url?: string;
+    } | null;
+  } | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: REVIEWS_METRIC_BY_FOOD_ID_QUERY
+// Query: *[_type == "reviewMetrics" && food._ref == $foodId]| order(createdAt desc) {  "reviewId": review._ref,  likesCount,  dislikesCount,}
+export type REVIEWS_METRIC_BY_FOOD_ID_QUERY_RESULT = Array<{
+  reviewId: string | null;
+  likesCount: number | null;
+  dislikesCount: number | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: MY_REVIEW_REACTION_QUERY
+// Query: *[_type == "reviewReaction"   && user._ref == $userId   && food._ref == $foodId  ]{  "reviewId": review._ref,  "confirmedReaction":type ,}
+export type MY_REVIEW_REACTION_QUERY_RESULT = Array<{
+  reviewId: string | null;
+  confirmedReaction: "dislike" | "like" | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: REVIEW_REACTIONS_QUERY_WITH_REVIEW_ID
+// Query: {  "likes": count(*[_type == "reviewReaction" && review._ref == $reviewId && type == "like"]),  "dislikes": count(*[_type == "reviewReaction" && review._ref == $reviewId && type == "dislike"])}
+export type REVIEW_REACTIONS_QUERY_WITH_REVIEW_ID_RESULT = {
+  likes: number;
+  dislikes: number;
+};
+
+// Source: src/lib/query.ts
+// Variable: LIKES_COUNT_QUERY
+// Query: count(    *[      _type == "reviewReaction" &&      review._ref == $reviewId &&      type == "like"    ])
+export type LIKES_COUNT_QUERY_RESULT = number;
+
+// Source: src/lib/query.ts
+// Variable: DISLIKES_COUNT_QUERY
+// Query: count(    *[      _type == "reviewReaction" &&      review._ref == $reviewId &&      type == "dislike"    ])
+export type DISLIKES_COUNT_QUERY_RESULT = number;
+
+// Source: src/lib/query.ts
+// Variable: ALL_RESTAURANTS_QUERY
+// Query: *[_type == "restaurant" && isActive == true] {    _id,    name,    description,    image,    rating,    deliveryFee,    estimatedDeliveryTime,    "slug": slug.current,    location,    isActive,    minimumOrder,    totalReviews,    "categoriesCount": count(categories),    "foodItemsCount": count(foodItems)  }
+export type ALL_RESTAURANTS_QUERY_RESULT = Array<{
+  _id: string;
+  name: string | null;
+  description: string | null;
+  image: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  rating: number | null;
+  deliveryFee: number | null;
+  estimatedDeliveryTime: number | null;
+  slug: string | null;
+  location: {
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  } | null;
+  isActive: true;
+  minimumOrder: number | null;
+  totalReviews: number | null;
+  categoriesCount: number | null;
+  foodItemsCount: number | null;
+}>;
+
+// Source: src/lib/query.ts
+// Variable: GET_RESTAURANT_BY_SLUG_QUERY
+// Query: *[_type == "restaurant" && slug.current == $slug][0] {    _id,    name,    description,    image,    rating,    deliveryFee,    estimatedDeliveryTime,    "slug": slug.current,    location,    phone,    email,    "openingHours": openingHours-> {      _id,      name,      schedule[]{        day,        openTime,        closeTime,        isClosed      }    },    isActive,    minimumOrder,    totalReviews,    "openingHours":openingHours->{      _id,      name,      schedule[]{        day,        openTime,        closeTime,        isClosed      }    },    "categoriesCount": count(categories),    "foodItemsCount": count(      select(        AllFoodItemsAvailable => *[_type == "food"] [0...12],        foodItems[]->{          _id,          name        }      )    ),    "foodItems": select(      AllFoodItemsAvailable => *[_type == "food"] [0...12] {      _id,      name,      "slug": slug.current,      description,      price,      images,      averageRating,      "totalReviews": count(        *[          _type == "review" &&          food._ref == ^._id &&          approved == true        ]      ),      category->{        _id,        name,        "slug": slug.current      }    },      foodItems[]->{        _id,        name,        "slug": slug.current,        description,        price,        images,        averageRating,        "totalReviews": count(        *[          _type == "review" &&          food._ref == ^._id &&          approved == true        ]      ),      category->{        _id,        name,        "slug": slug.current      }    }    ),    "categories":categories[]->{      _id,      name,      "slug": slug.current,      image    }  }
+export type GET_RESTAURANT_BY_SLUG_QUERY_RESULT = {
+  _id: string;
+  name: string | null;
+  description: string | null;
+  image: {
+    asset?: SanityImageAssetReference;
+    media?: unknown;
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  } | null;
+  rating: number | null;
+  deliveryFee: number | null;
+  estimatedDeliveryTime: number | null;
+  slug: string | null;
+  location: {
+    address?: string;
+    latitude?: number;
+    longitude?: number;
+  } | null;
+  phone: string | null;
+  email: string | null;
+  openingHours: {
+    _id: string;
+    name: string | null;
+    schedule: Array<{
+      day:
+        | "friday"
+        | "monday"
+        | "saturday"
+        | "sunday"
+        | "thursday"
+        | "tuesday"
+        | "wednesday"
+        | null;
+      openTime: string | null;
+      closeTime: string | null;
+      isClosed: boolean | null;
+    }> | null;
+  } | null;
+  isActive: boolean | null;
+  minimumOrder: number | null;
+  totalReviews: number | null;
+  categoriesCount: number | null;
+  foodItemsCount: number | null;
+  foodItems: Array<{
+    _id: string;
+    name: string | null;
+    slug: string | null;
+    description: string | null;
+    price: number | null;
+    images: Array<{
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+      _key: string;
+    }> | null;
+    averageRating: null;
+    totalReviews: number;
+    category: {
+      _id: string;
+      name: string | null;
+      slug: string | null;
+    } | null;
+  }> | null;
+  categories: Array<{
+    _id: string;
+    name: string | null;
+    slug: string | null;
+    image: {
+      asset?: SanityImageAssetReference;
+      media?: unknown;
+      hotspot?: SanityImageHotspot;
+      crop?: SanityImageCrop;
+      _type: "image";
+    } | null;
+  }> | null;
+} | null;
 
 // Query TypeMap
 import "@sanity/client";
-import { FoodWithDetails } from "./types/sanityTypes";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '\n  *[_type == "banner" && active == true] | order(order asc) {\n    _id,\n    title,\n    description,\n    bannerImage,\n    buttonTitle,\n    buttonHref,\n    order\n  }\n': BANNERS_QUERYResult;
+    '\n      *[_type == "order"] | order(_createdAt desc) {\n       _id,\n        _createdAt,\n        orderNumber,\n        status,\n        total,\n        paymentStatus,\n        userName,\n        userEmail,\n        user,\n        items,\n        deliveryAddress,\n        subtotal,\n        deliveryFee,\n        tax\n      }[0...50]\n    ': QueryResult;
+    'count(*[_type == "order"])': CountQueryResult;
+    '\n      *[_type == "order"] | order(_createdAt desc) {\n        _id,\n        _createdAt,\n        orderNumber,\n        status,\n        total,\n        paymentStatus,\n        userName,\n        userEmail,\n        paymentMethod,\n        items\n      }[$start...$end]\n    ': DataQueryResult;
+    '\n  *[_type == "banner" && active == true] | order(order asc) {\n    _id,\n    title,\n    description,\n    bannerImage,\n    buttonTitle,\n    buttonHref,\n    order\n  }\n': BANNERS_QUERY_RESULT;
+    '\n  *[_type == "food" && featured == true && available == true] \n  | order(order asc) [0...8] {\n    _id,\n    name,\n    "slug": slug.current,\n    description,\n    "basePrice": price,\n    images,\n    preparationTime,\n    spiceLevel,\n    available,\n    featured,\n    averageRating,\n    totalReviews,\n    category->{\n      _id,\n      name,\n      "slug": slug.current\n    },\n    varieties[]->{\n      _id,\n      name,\n    }\n  }\n': FEATURED_FOODS_QUERY_RESULT;
+    '\n  *[_type == "category" && isActive == true] | order(order asc) {\n    _id,\n    name,\n    "slug": slug.current,\n    image,\n    "itemCount": count(*[_type == "food" && references(^._id)])\n  }\n': CATEGORIES_QUERY_RESULT;
+    '\n  *[_type == "category" && isActive == true] | order(order asc) [0...6] {\n    _id,\n    name,\n    "slug": slug.current,\n    image,\n    "itemsCount": count(*[_type == "food" && references(^._id)])\n  }\n': CATEGORIES_WITH_COUNT_QUERY_RESULT;
+    '\n  *[_type == "category" && slug.current == $slug][0] {\n    _id,\n    name,\n    "slug": slug.current,\n    image,\n    description,\n    "itemsCount": count(*[_type == "food" && references(^._id)]),\n    "foodItems": *[_type == "food" && references(^._id)] | order(order asc) {\n      _id,\n      name,\n      "slug": slug.current,\n      description,\n      "basePrice": price,\n      images,\n      preparationTime,\n      spiceLevel,\n      available,\n      featured,\n      averageRating,\n      totalReviews,\n      category->{\n        _id,\n        name,\n        "slug": slug.current\n      },\n      varieties[]->{\n        _id,\n        name,\n      }\n    }\n  }\n': GET_CATEGORY_BY_SLUG_QUERY_RESULT;
+    '\n  *[_type == "food" && available == true && (\n      name match $query + "*" ||\n      description match $query + "*" ||\n      category->name match $query + "*" \n    )] | order(name asc) [0...10] {\n      _id,\n      name,\n      "slug": slug.current,\n      description,\n      basePrice,\n      images,\n      price,\n      averageRating,\n      totalReviews,\n      category->{\n        _id,\n        name,\n        "slug": slug.current\n      }\n    }\n': SEARCH_FOODS_QUERY_RESULT;
+    '\n  *[_type == "food" && featured == true && available == true] \n    | order(name asc)[0...6]{\n      _id,\n      name,\n      "slug": slug.current,\n      description,\n      basePrice,\n      images,\n      averageRating,\n      totalReviews,\n      category->{\n        _id,\n        name,\n        "slug": slug.current\n      }\n    }\n': FEATURED_FOODS_SEARCH_QUERY_RESULT;
+    '\n  *[_type == "food" && slug.current == $slug][0] {\n    _id,\n    name,\n    "slug": slug.current,\n    description,\n    "basePrice": price,\n    images,\n    "preparationTime": PreparationTime,\n    spiceLevel,\n    available,\n    "ingredients":ingredients[]->{\n      name,\n      _id,\n    },\n    "sizes":sizes[]{\n      _key,\n      "size":size->{\n        name,\n        _id,\n      },\n    },\n    featured,\n     // Dynamic average rating\n   "averageRating": coalesce(\n    math::avg(\n      *[\n        _type == "review" &&\n        food._ref == ^._id &&\n        approved == true\n      ].rating\n    ),\n    0\n    ),\n     "totalReviews": count(\n    *[\n    _type == "review" &&\n    food._ref == ^._id &&\n    approved == true\n    ]\n    ),\n    category->{\n      _id,\n      name,\n      "slug": slug.current\n    },\n    varieties[]->{\n      _id,\n      name,\n    }\n  }\n': GET_FOOD_BY_SLUG_QUERY_RESULT;
+    '\n  *[_type == "food" && category._ref == $categoryId && _id != $excludeFoodId] {\n    _id,\n    name,\n    "slug": slug.current,\n    description,\n    price,\n    images,\n    averageRating,\n    "totalReviews": count(\n    *[\n    _type == "review" &&\n    food._ref == ^._id &&\n    approved == true\n    ]\n    ),\n    category->{\n      _id,\n      name,\n      "slug": slug.current\n    }\n  }\n': GET_FOOD_BY_CATEGORY_QUERY_RESULT;
+    '*[_type == "post" && isFeatured == true] \n  | order(publishedAt desc) [0...4] {\n  _id,\n  title,\n  slug,\n  mainImage,\n  publishedAt,\n  author->{_id, name, image, bio},\n  categories[]->{_id, title, slug}\n}': FEATURED_POSTS_QUERY_RESULT;
+    '*[_type == "post"] \n  | order(publishedAt desc) [0...4] {\n  _id,\n  title,\n  "slug": slug.current,\n  mainImage,\n  publishedAt,\n}': LATEST_POSTS_QUERY_RESULT;
+    '*[_type == "post"] \n  | order(publishedAt desc) {\n  _id,\n  title,\n  slug,\n  mainImage,\n  publishedAt,\n  author->{ _id, name, image, bio},\n  categories[]->{_id, title, slug}\n}': ALL_POSTS_QUERY_RESULT;
+    '\n  *[_type == "post" && slug.current == $slug][0]{\n    _id,\n    _type,\n    _createdAt,\n    _updatedAt,\n\n    title,\n    "slug": slug.current,\n    isFeatured,\n    publishedAt,\n\n    author->{\n      _id,\n      name,\n      image,\n      bio\n    },\n\n    mainImage{\n      ...,\n      alt,\n      asset->\n    },\n\n    categories[]->{\n      _id,\n      title,\n      "slug": slug.current\n    },\n\n    body[]{\n      ...,\n\n      _type == "image" => {\n        ...,\n        asset->\n      },\n\n      _type == "twoUpImages" => {\n        ...,\n\n        image1{\n          ...,\n          asset->\n        },\n\n        image2{\n          ...,\n          asset->\n        }\n      }\n    }\n  }\n': GET_POST_DETAILS_BY_SLUG_QUERY_RESULT;
+    '*[_type == "address" && user._ref == $userId]{\n      _id,\n      type,\n      label,\n      street,\n      apartment,\n      city,\n      state,\n      zipCode,\n      phone,\n      instructions,\n      isDefault\n     }\n    ': ADDRESSES_QUERY_RESULT;
+    '\n*[_type == "review" && food._ref == $foodId && approved == true]\n| order(createdAt desc) {\n  _id,\n  _type,\n  _rev,\n  _createdAt,\n  _updatedAt,\n\n  rating,\n  comment,\n  approved,\n  \n  food,\n  "foodName": food->name,\n  "user": user->{\n    _id,\n    name,\n    image\n  },\n}': REVIEWS_STATIC_BY_FOOD_ID_QUERY_RESULT;
+    '\n*[_type == "reviewMetrics" && food._ref == $foodId]\n| order(createdAt desc) {\n\n  "reviewId": review._ref,\n\n  likesCount,\n  dislikesCount,\n}': REVIEWS_METRIC_BY_FOOD_ID_QUERY_RESULT;
+    '\n*[_type == "reviewReaction" \n  && user._ref == $userId \n  && food._ref == $foodId\n  ]{\n  "reviewId": review._ref,\n  "confirmedReaction":type ,\n}\n': MY_REVIEW_REACTION_QUERY_RESULT;
+    '\n{\n  "likes": count(*[_type == "reviewReaction" && review._ref == $reviewId && type == "like"]),\n  "dislikes": count(*[_type == "reviewReaction" && review._ref == $reviewId && type == "dislike"])\n}\n': REVIEW_REACTIONS_QUERY_WITH_REVIEW_ID_RESULT;
+    'count(\n    *[\n      _type == "reviewReaction" &&\n      review._ref == $reviewId &&\n      type == "like"\n    ])': LIKES_COUNT_QUERY_RESULT;
+    'count(\n    *[\n      _type == "reviewReaction" &&\n      review._ref == $reviewId &&\n      type == "dislike"\n    ])': DISLIKES_COUNT_QUERY_RESULT;
+    '\n  *[_type == "restaurant" && isActive == true] {\n    _id,\n    name,\n    description,\n    image,\n    rating,\n    deliveryFee,\n    estimatedDeliveryTime,\n    "slug": slug.current,\n    location,\n    isActive,\n    minimumOrder,\n    totalReviews,\n    "categoriesCount": count(categories),\n    "foodItemsCount": count(foodItems)\n  }\n': ALL_RESTAURANTS_QUERY_RESULT;
+    '\n  *[_type == "restaurant" && slug.current == $slug][0] {\n    _id,\n    name,\n    description,\n    image,\n    rating,\n    deliveryFee,\n    estimatedDeliveryTime,\n    "slug": slug.current,\n    location,\n    phone,\n    email,\n    "openingHours": openingHours-> {\n      _id,\n      name,\n      schedule[]{\n        day,\n        openTime,\n        closeTime,\n        isClosed\n      }\n    },\n    isActive,\n    minimumOrder,\n    totalReviews,\n    "openingHours":openingHours->{\n      _id,\n      name,\n      schedule[]{\n        day,\n        openTime,\n        closeTime,\n        isClosed\n      }\n    },\n    "categoriesCount": count(categories),\n    "foodItemsCount": count(\n      select(\n        AllFoodItemsAvailable => *[_type == "food"] [0...12],\n        foodItems[]->{\n          _id,\n          name\n        }\n      )\n    ),\n    "foodItems": select(\n      AllFoodItemsAvailable => *[_type == "food"] [0...12] {\n      _id,\n      name,\n      "slug": slug.current,\n      description,\n      price,\n      images,\n      averageRating,\n      "totalReviews": count(\n        *[\n          _type == "review" &&\n          food._ref == ^._id &&\n          approved == true\n        ]\n      ),\n      category->{\n        _id,\n        name,\n        "slug": slug.current\n      }\n    },\n      foodItems[]->{\n        _id,\n        name,\n        "slug": slug.current,\n        description,\n        price,\n        images,\n        averageRating,\n        "totalReviews": count(\n        *[\n          _type == "review" &&\n          food._ref == ^._id &&\n          approved == true\n        ]\n      ),\n      category->{\n        _id,\n        name,\n        "slug": slug.current\n      }\n    }\n    ),\n    "categories":categories[]->{\n      _id,\n      name,\n      "slug": slug.current,\n      image\n    }\n  }\n': GET_RESTAURANT_BY_SLUG_QUERY_RESULT;
   }
 }

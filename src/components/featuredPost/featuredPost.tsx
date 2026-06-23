@@ -2,8 +2,9 @@ import { client } from "@/sanity/lib/client";
 import { groq } from "next-sanity";
 import { Button } from "../ui/button";
 import Link from "next/link";
-import { Post } from "../../../sanity.types";
+
 import BlogCard from "./blogCard";
+import { PostCard } from "../../../types/sanityTypes";
 
 const FeaturedPost = async () => {
   const query = groq`*[_type == "post" && isFeatured == true] 
@@ -17,7 +18,7 @@ const FeaturedPost = async () => {
   categories[]->{title, slug}
 }`;
 
-  const post: Post[] = await client.fetch(query);
+  const post: PostCard[] = await client.fetch(query);
 
   if (!post || post.length === 0) {
     return null;

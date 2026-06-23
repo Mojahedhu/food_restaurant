@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { Category } from "../../../../../sanity.types";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import { ArrowRight } from "lucide-react";
+import { CategoryWithCount } from "../../../../../types/sanityTypes";
 
 interface CategoriesGridProps {
-  categories: Category[];
+  categories: CategoryWithCount[];
 }
 
 function CategoriesGrid({ categories }: CategoriesGridProps) {

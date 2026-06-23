@@ -9,6 +9,7 @@ import {
   SheetContent,
   SheetTrigger,
   SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 
 export function Header() {
@@ -19,8 +20,8 @@ export function Header() {
       {/* Mobile Menu Toggle (Visible on sm/md, hidden on lg/xl) */}
       <div className="lg:hidden flex items-center">
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild>
-            <button className="p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors">
+          <SheetTrigger className="hover:cursor-pointer!" asChild>
+            <button className="p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted transition-colors ">
               <Menu className="size-6" />
             </button>
           </SheetTrigger>
@@ -28,6 +29,9 @@ export function Header() {
             {/* Required by accessibility standards */}
 
             <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
+            <SheetDescription className="sr-only">
+              sidebar for mobile
+            </SheetDescription>
             {/* Render the identical sidebar but tell it to close the sheet on navigate */}
             <Sidebar className="flex" onNavigate={() => setIsOpen(false)} />
           </SheetContent>

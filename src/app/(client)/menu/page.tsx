@@ -25,8 +25,29 @@ async function getMenuData() {
           spiceLevel,
           available,
           featured,
-          averageRating,
-          totalReviews,
+         "averageRating": coalesce(
+              math::avg(
+                *[
+                  _type == "review" &&
+                  food._ref == ^._id &&
+                  approved == true
+                ].rating
+              ),
+              0
+            ),
+            "totalReviews": count(
+              *[
+                _type == "review" &&
+                food._ref == ^._id &&
+                approved == true
+              ]
+            ),
+            category->{
+              _id,
+              name,
+              "slug": slug.current,
+              description
+            },
           category->{
             _id,
             name,

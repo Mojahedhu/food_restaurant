@@ -1,11 +1,9 @@
-import { Restaurant } from "../../../sanity.types";
-
 import RestaurantCard from "../restaurants/restaurantCard";
 
 import { getFeaturedRestaurants } from "@/lib/data/restaurants";
 
 const FeaturedRestaurants = async () => {
-  const restaurants: Restaurant[] = await getFeaturedRestaurants();
+  const restaurants = await getFeaturedRestaurants();
 
   if (!restaurants || restaurants.length === 0) {
     return null;
@@ -24,7 +22,7 @@ const FeaturedRestaurants = async () => {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {restaurants.map((restaurant: Restaurant) => (
+        {restaurants.map((restaurant) => (
           <RestaurantCard restaurant={restaurant} key={restaurant._id} />
         ))}
       </div>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { FoodWithDetails } from "../../../../types/sanityTypes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { client } from "@/sanity/lib/client";
@@ -95,8 +95,23 @@ const MenuClient = ({
             spiceLevel,
             available,
             featured,
-            averageRating,
-            totalReviews,
+            "averageRating": coalesce(
+              math::avg(
+                *[
+                  _type == "review" &&
+                  food._ref == ^._id &&
+                  approved == true
+                ].rating
+              ),
+              0
+            ),
+            "totalReviews": count(
+              *[
+                _type == "review" &&
+                food._ref == ^._id &&
+                approved == true
+              ]
+            ),
             category->{
               _id,
               name,

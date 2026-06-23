@@ -158,6 +158,7 @@ export async function fetchAdminOrdersPaged({
         paymentStatus,
         userName,
         userEmail,
+        paymentMethod,
         items
       }[$start...$end]
     `;

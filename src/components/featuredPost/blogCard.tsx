@@ -1,5 +1,4 @@
 import React from "react";
-import { Post } from "../../../sanity.types";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
@@ -7,12 +6,13 @@ import { Badge } from "../ui/badge";
 import { ArrowRight, CalendarIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "../ui/button";
+import { PostCard } from "../../../types/sanityTypes";
 
 const BlogCard = ({
   post,
   props,
 }: {
-  post: Post;
+  post: PostCard;
   props?: React.ComponentProps<"div">;
 }) => {
   return (

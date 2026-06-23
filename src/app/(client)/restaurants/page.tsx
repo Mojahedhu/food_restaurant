@@ -1,8 +1,9 @@
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import { getRestaurants } from "@/lib/data/restaurants";
 import { Utensils } from "lucide-react";
-import { Restaurant } from "../../../../sanity.types";
+
 import RestaurantCard from "@/components/restaurants/restaurantCard";
+import { Restaurant } from "../../../../types/sanityTypes";
 
 async function RestaurantPage() {
   const restaurants: Restaurant[] = await getRestaurants();

@@ -1,7 +1,7 @@
 "use client";
 
 import { OrderSummary } from "@/types/admin";
-import { formatCurrency } from "@/lib/utils"; // Your format utility
+import { formatCurrency, getPaymentStatusColor } from "@/lib/utils"; // Your format utility
 import { format } from "date-fns"; // Standard date formatting package
 import {
   MoreHorizontal,
@@ -82,19 +82,6 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
   const [selectedOrder, setSelectedOrder] = useState<OrderSummary | null>(null);
   // For Phase 3, we simply render the initial data.
   // const orders = initialOrders;
-
-  // Helper to colorize payment status
-  const getPaymentStatusColor = (status?: string) => {
-    switch (status) {
-      case "paid":
-        return "bg-secondary text-secondary-foreground hover:bg-secondary/80 border-accent";
-      case "failed":
-        return "bg-destructive/10 text-destructive hover:bg-destructive/20 border-destructive/20";
-      case "pending":
-      default:
-        return "bg-amber-100/80 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400 border-amber-200 dark:border-amber-900/50";
-    }
-  };
 
   // Helper to get order status label
   const getOrderStatusLabel = (refId?: string) => {

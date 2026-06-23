@@ -40,42 +40,14 @@ export default defineType({
       rows: 4,
       validation: (Rule) => Rule.required().min(10).max(1000),
     }),
-    /**
-     * =========================================================
-     * Authoritative aggregate counters
-     * =========================================================
-     */
-
-    // ✅ denormalized counters (fast reads)
-    // defineField({
-    //   name: "likesCount",
-    //   title: "Likes Count",
-    //   type: "number",
-    //   initialValue: 0,
-    //   validation: (rule) => rule.min(0),
-    // }),
-    // defineField({
-    //   name: "dislikesCount",
-    //   title: "Dislikes Count",
-    //   type: "number",
-    //   initialValue: 0,
-    //   validation: (rule) => rule.min(0),
-    // }),
-
-    /**
-     * =========================================================
-     * Deterministic realtime reconciliation
-     * =========================================================
-     */
-
-    // defineField({
-    //   name: "revision",
-    //   title: "Revision",
-    //   type: "number",
-    //   initialValue: 0,
-    //   readOnly: true,
-    //   validation: (Rule) => Rule.min(0),
-    // }),
+    defineField({
+      name: "adminReply",
+      title: "Admin Reply",
+      type: "text",
+      rows: 3,
+      description: "Official response from the restaurant administration.",
+      validation: (Rule) => Rule.max(1000),
+    }),
   ],
   preview: {
     select: {
@@ -84,20 +56,9 @@ export default defineType({
       rating: "rating",
       comment: "comment",
       approved: "approved",
-      // likesCount: "likesCount",
-      // dislikesCount: "dislikesCount",
       createdAt: "_createdAt",
     },
-    prepare: ({
-      userName,
-      foodName,
-      rating,
-      comment,
-      approved,
-      // likesCount,
-      // dislikesCount,
-      createdAt,
-    }) => {
+    prepare: ({ userName, foodName, rating, comment, approved, createdAt }) => {
       const approvedMark = approved ? "💹" : "⌛";
       const shortComment = comment
         ? comment.slice(0, 50) + (comment.length > 60 ? "..." : "")
@@ -109,12 +70,7 @@ export default defineType({
 
       return {
         title: `${approvedMark} ${userName || "Unknown user"} - ${rating}/5 🌟`,
-        description: [
-          foodName,
-          // `👍 ${likesCount ?? 0}`,
-          // `👎 ${dislikesCount ?? 0}`,
-          `${shortComment} • ${formattedDate}`,
-        ]
+        description: [foodName, `${shortComment} • ${formattedDate}`]
           .filter(Boolean)
           .join(" • "),
       };

@@ -124,6 +124,18 @@ const ReviewCard = ({
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed wrap-break-word">
               {view.review.comment}
             </p>
+            {view.review.adminReply && (
+              <div className="mt-3 bg-muted/40 p-3 rounded-lg border border-primary/10 pl-4 border-l-4 border-l-primary/60">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="font-semibold text-[10px] text-primary uppercase tracking-wider">
+                    Restaurant Response
+                  </span>
+                </div>
+                <p className="text-foreground text-sm leading-relaxed italic">
+                  &quot;{view.review.adminReply}&quot;
+                </p>
+              </div>
+            )}
             <div className="flex items-center gap-2 pt-2">
               <Button
                 onClick={() => {
