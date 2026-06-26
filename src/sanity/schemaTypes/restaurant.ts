@@ -1,4 +1,3 @@
-import { Ruler } from "lucide-react";
 import { defineField, defineType } from "sanity";
 
 export default defineType({

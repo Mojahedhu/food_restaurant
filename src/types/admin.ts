@@ -77,6 +77,11 @@ export type WalletTransaction = {
   order?: { _id: string; orderNumber: string };
 };
 
+/* * ======================================================================
+ * definition for the admin Dashboard
+ * ======================================================================
+ */
+
 export interface DashboardStats {
   totalRevenue: number;
   ordersCount: number;
@@ -133,6 +138,11 @@ export interface StatusDistributionPoint {
   fill: string;
 }
 
+/* * ======================================================================
+ * definition for the admin Review
+ * ======================================================================
+ */
+
 export interface ReviewSummary {
   _id: string;
   _createdAt: string;
@@ -177,4 +187,62 @@ export interface ReviewMetrics extends ReviewMetricsSummary {
 export interface ReviewTotal {
   reviews: ReviewSummary[];
   total: number;
+}
+
+/* * ======================================================================
+ * definition for the admin Settings
+ * ======================================================================
+ */
+
+export interface ScheduleSummary {
+  _id: string;
+  name: string;
+}
+
+export interface OpeningHoursSchedule {
+  _id: string;
+  name: string;
+  schedule: Array<{
+    day: string;
+    openTime: string;
+    closeTime: string;
+    isClosed: boolean;
+  }>;
+  description?: string;
+}
+
+export interface RestaurantDetails {
+  _id: string;
+  _createdAt: string;
+  name: string;
+  slug: {
+    _type: "slug";
+    current: string;
+  };
+  description: string;
+  image?: {
+    _type: "image";
+    asset?: {
+      _type: "reference";
+      _ref: string;
+    };
+  };
+  phone: string;
+  email: string;
+  location: {
+    _type?: "object";
+    address: string;
+    latitude: number;
+    longitude: number;
+  };
+  deliveryFee: number;
+  minimumOrder: number;
+  estimatedDeliveryTime: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  order: number;
+  AllFoodItemsAvailable?: boolean;
+  openingHours: OpeningHoursSchedule | null;
+  categoriesCount?: number;
+  foodItemsCount?: number;
 }

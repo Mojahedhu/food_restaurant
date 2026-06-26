@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { StatusDistributionPoint } from "@/types/admin";
+import { useEffect, useState } from "react";
 import {
   Pie,
   PieChart,
@@ -23,7 +24,13 @@ interface StatusPieChartProps {
 }
 
 export function StatusPieChart({ data }: StatusPieChartProps) {
+  const [mounted, setMounted] = useState(false);
   const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
 
   return (
     <Card
@@ -44,8 +51,16 @@ export function StatusPieChart({ data }: StatusPieChartProps) {
           <div className="h-full flex items-center justify-center text-sm text-muted-foreground italic">
             No order data available.
           </div>
+        ) : !mounted ? (
+          <div className="h-full w-full bg-slate-50/50 dark:bg-slate-900/50 animate-pulse rounded-lg" />
         ) : (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minHeight={0}
+            minWidth={0}
+            initialDimension={{ width: 400, height: 300 }} // Default server fallback
+          >
             <PieChart>
               <Pie
                 data={data}

@@ -5,12 +5,14 @@ import { Badge } from "../ui/badge";
 import { Clock, MapPin, Star, Utensils } from "lucide-react";
 import { urlFor } from "@/sanity/lib/image";
 import { Restaurant } from "../../../types/sanityTypes";
+import { isRestaurantOpen } from "@/lib/utils/schedule";
 
 interface RestaurantCardProps {
   restaurant: Restaurant;
 }
 
 function RestaurantCard({ restaurant }: RestaurantCardProps) {
+  const isOpen = isRestaurantOpen(restaurant);
   return (
     <Link key={restaurant._id} href={`/restaurants/${restaurant.slug}`}>
       <Card className="py-0 overflow-hidden hover:shadow-lg hover-effect">
@@ -32,9 +34,13 @@ function RestaurantCard({ restaurant }: RestaurantCardProps) {
               </Badge>
             </div>
           )}
-          {restaurant.isActive && (
+          {isOpen ? (
             <Badge className="absolute top-2 right-2 bg-green-500">
               Open Now
+            </Badge>
+          ) : (
+            <Badge className="absolute top-2 right-2 bg-destructive">
+              Closed Now
             </Badge>
           )}
         </div>

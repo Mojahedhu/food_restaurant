@@ -6,6 +6,7 @@ interface OpeningScheduleProps {
     day: string;
     openTime: string;
     closeTime: string;
+    isClosed: boolean;
   };
 }
 
@@ -14,6 +15,22 @@ function OpeningSchedule({ schedule }: OpeningScheduleProps) {
   const day = today
     .toLocaleDateString("en-US", { weekday: "long" })
     .toLowerCase();
+
+  const status = schedule.isClosed ? (
+    <Badge
+      variant={"destructive"}
+      className="px-1 py-0 border-destructive/50 text-[10px] text-destructive"
+    >
+      Closed
+    </Badge>
+  ) : (
+    <Badge
+      variant={"secondary"}
+      className="px-1 py-0 border-primary/50 text-primary text-[10px]"
+    >
+      Open
+    </Badge>
+  );
 
   const isToday = schedule.day === day;
 
@@ -33,9 +50,14 @@ function OpeningSchedule({ schedule }: OpeningScheduleProps) {
           </Badge>
         )}
       </span>
-      <span className="">
-        {schedule.openTime} - {schedule.closeTime}
-      </span>
+      <div className="flex items-center gap-2">
+        {status}
+        {!schedule.isClosed && (
+          <span className="text-muted-foreground">
+            {schedule.openTime} - {schedule.closeTime}
+          </span>
+        )}
+      </div>
     </div>
   );
 }

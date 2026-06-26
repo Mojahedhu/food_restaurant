@@ -3,7 +3,6 @@ import { twMerge } from "tailwind-merge";
 import { User } from "../../types/sanityTypes";
 import { urlFor } from "@/sanity/lib/image";
 import { SanityAsset } from "@sanity/image-url";
-import { UserImage } from "../../sanity.types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

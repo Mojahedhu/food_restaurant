@@ -5,9 +5,9 @@ import {
   fetchOrderStatusDistribution,
 } from "@/actions/admin-dashboard";
 import { DashboardMetricCards } from "@/components/admin/features/dashboard/dashboardMetricCards";
+import { RecentActivityFeed } from "@/components/admin/features/dashboard/recentActivityFeed";
 import { RevenueChart } from "@/components/admin/features/dashboard/revenueChart";
 import { StatusPieChart } from "@/components/admin/features/dashboard/statusPieChart";
-import { RecentActivityFeed } from "@/components/admin/features/dashboard/recentActivityFeed";
 
 export const metadata = {
   title: "Admin | Dashboard Control Center",

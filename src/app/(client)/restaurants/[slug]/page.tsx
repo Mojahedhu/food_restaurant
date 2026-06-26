@@ -21,6 +21,7 @@ import OpeningSchedule from "./_components/openingSchedule";
 
 import RestaurantPageSkeleton from "./loading";
 import { ViewTransition } from "react";
+import { isRestaurantOpen } from "@/lib/utils/schedule";
 
 async function RestaurantDetailsPage({
   params,
@@ -33,6 +34,9 @@ async function RestaurantDetailsPage({
   if (!restaurantDetails?.foodItems) {
     return <RestaurantPageSkeleton />;
   }
+  const isOpen = isRestaurantOpen(restaurantDetails);
+  console.log(restaurantDetails);
+  console.log("isOpen", isOpen);
 
   return (
     <ViewTransition name="restaurant-details-route">
@@ -53,7 +57,7 @@ async function RestaurantDetailsPage({
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="space-y-4 max-w-3xl">
                 <div className="flex items-center gap-3">
-                  {restaurantDetails?.isActive ? (
+                  {isOpen ? (
                     <Badge className="h-[unset] px-3 py-1 text-sm">
                       Open now
                     </Badge>
@@ -202,23 +206,6 @@ async function RestaurantDetailsPage({
                     <div className="space-y-3">
                       {restaurantDetails?.openingHours?.schedule?.map(
                         (schedule) => (
-                          // <div
-                          //   key={schedule.day}
-                          //   className="flex justify-between text-sm p-2 rounded-md bg-primary/10 font-medium"
-                          // >
-                          //   <span className="capitalize flex items-center gap-2">
-                          //     {schedule.day}
-                          //     <Badge
-                          //       variant={"secondary"}
-                          //       className="px-1 py-0 border-primary/50 text-primary text-[10px]"
-                          //     >
-                          //       Today
-                          //     </Badge>
-                          //   </span>
-                          //   <span className="">
-                          //     {schedule.openTime} - {schedule.closeTime}
-                          //   </span>
-                          // </div>
                           <OpeningSchedule
                             key={schedule.day}
                             schedule={schedule}

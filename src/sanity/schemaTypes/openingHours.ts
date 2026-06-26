@@ -1,5 +1,4 @@
 import { defineField, defineType } from "sanity";
-import { validate } from "uuid";
 
 export default defineType({
   name: "openingHours",
@@ -119,14 +118,22 @@ export default defineType({
               title: "Opening Time",
               type: "string",
               description: "Format HH:MM (24-hour format)",
-              validation: (Rule) => Rule.required(),
+              validation: (Rule) =>
+                Rule.required().regex(/^([0-1]\d|2[0-3]):[0-5]\d$/, {
+                  name: "24-hour time format (HH:MM)",
+                  invert: false,
+                }),
             },
             {
               name: "closeTime",
               title: "Closing Time",
               type: "string",
               description: "Format HH:MM (24-hour format)",
-              validation: (Rule) => Rule.required(),
+              validation: (Rule) =>
+                Rule.required().regex(/^([0-1]\d|2[0-3]):[0-5]\d$/, {
+                  name: "24-hour time format (HH:MM)",
+                  invert: false,
+                }),
             },
             {
               name: "isClosed",

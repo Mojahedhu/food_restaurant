@@ -103,7 +103,7 @@ export function ReviewDetailsDialog({
             <Label className="text-xs font-semibold text-muted-foreground">
               User Comment
             </Label>
-            <div className="text-sm bg-muted/20 border p-3 rounded-lg leading-relaxed italic text-foreground">
+            <div className="text-sm bg-muted/20 border p-3 rounded-lg leading-relaxed italic text-foreground break-all">
               &quot;{review.comment}&quot;
             </div>
           </div>

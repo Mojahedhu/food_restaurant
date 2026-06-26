@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/refs */
 "use client";
 import {
   Carousel,
@@ -33,7 +32,9 @@ const HeroUi = ({ banners }: { banners: Banner[] }) => {
       <Carousel
         // eslint-disable-next-line react-hooks/refs
         plugins={[plugin.current]}
+        // eslint-disable-next-line react-hooks/refs
         onMouseEnter={plugin.current.stop}
+        // eslint-disable-next-line react-hooks/refs
         onMouseLeave={plugin.current.reset}
         className="w-full"
         opts={{
@@ -58,6 +59,7 @@ const HeroUi = ({ banners }: { banners: Banner[] }) => {
                       width={1920}
                       height={700}
                       className="w-full h-full object-cover"
+                      loading="eager"
                     />
                     {/* Overlay for better text visibility */}
                     <div className="absolute inset-0 bg-primary/10" />
