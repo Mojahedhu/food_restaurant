@@ -82,13 +82,13 @@ const SignInForm = ({ variant = "page" }: SignInFormProps) => {
             "Invalid email or password. Please check your credentials and try again.";
         } else if (errorMessage === "Configuration") {
           errorMessage =
-            "This account was created with Google. Please use the 'Sign";
+            "This account was created with Google. Please use the Google sign-in option.";
         } else if (errorMessage.includes("CallbackRouteError")) {
           // Extract the actual error from callback errors
           errorMessage = "Authentication failed. Please try again.";
         } else if (errorMessage === "OAuthAccountNotLinked") {
           errorMessage =
-            "This email is already registered with a different sign-in user";
+            "This email is already registered with a different sign-in method. Please use that method to sign in.";
         }
 
         setError(errorMessage);

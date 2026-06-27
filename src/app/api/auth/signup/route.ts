@@ -1,4 +1,4 @@
-import { client } from "@/sanity/lib/client";
+import { client, writeClient } from "@/sanity/lib/client";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -52,7 +52,7 @@ export const POST = async (req: NextRequest) => {
     );
 
     // Create user
-    const newUser = await client.create({
+    const newUser = await writeClient.create({
       _type: "user",
       name,
       email,

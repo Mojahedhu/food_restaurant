@@ -42,7 +42,7 @@ function AuthErrorContent() {
     "No user found": "No account found with this email address.",
     "Invalid password": "The password you entered is incorrect.",
     "Please sign in with Google":
-      "This account was created with Google. Please use the",
+      "This account was created with Google. Please use the Google sign-in option.",
     Default: "An error occurred during authentication.",
   };
 
