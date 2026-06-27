@@ -12,7 +12,7 @@ const authConfig = {
       issuer: "https://accounts.google.com",
       authorization: {
         params: {
-          prompt: "select_account",
+          prompt: "consent select_account",
         },
       },
     }),
