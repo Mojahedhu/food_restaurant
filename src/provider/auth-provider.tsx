@@ -10,7 +10,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Clean up OAuth query parameters returned by providers (like Google)
       // that are preserved by Netlify redirects.
-      const oauthParams = ["code", "state", "iss", "session_state"];
+      const oauthParams = [
+        "code",
+        "state",
+        "iss",
+        "session_state",
+        "scope",
+        "authuser",
+        "prompt",
+      ];
       oauthParams.forEach((param) => {
         if (url.searchParams.has(param)) {
           url.searchParams.delete(param);
