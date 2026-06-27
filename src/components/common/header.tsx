@@ -78,7 +78,7 @@ const Header = () => {
           {/* icons bar */}
           <div className="flex items-center gap-3">
             <button
-              className="hidden md:flex items-center justify-center border border-muted-foreground/30 p-2 rounded-full hover:bg-muted hover:border-primary text-muted-foreground hover:text-primary hover-effect"
+              className="hidden md:flex items-center justify-center border border-muted-foreground/30 p-2 rounded-full hover:bg-muted hover:border-primary text-muted-foreground hover:text-primary hover-effect cursor-pointer"
               aria-label="Search"
               onClick={() => setIsSearchOpen(true)}
             >
@@ -86,7 +86,7 @@ const Header = () => {
             </button>
 
             <Link href="/cart" aria-label="Shopping Cart">
-              <button className="flex items-center gap-1 border border-primary py-2 px-5 rounded-full relative overflow-hidden group hover:border-primary transition-colors">
+              <button className="flex items-center gap-1 border border-primary py-2 px-5 rounded-full relative overflow-hidden group hover:border-primary transition-colors cursor-pointer">
                 <span className="absolute inset-0 bg-primary -translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out rounded-full" />
 
                 <div className="relative z-10">

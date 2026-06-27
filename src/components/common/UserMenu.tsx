@@ -28,7 +28,7 @@ const UserMenu = () => {
             border p-1.5 border-muted-foreground/30 rounded-full
             hover:bg-muted hover:border-primary transition-all
             focus:outline-none focus:ring-2 focus:ring-primary
-            focus:ring-offset-2"
+            focus:ring-offset-2 cursor-pointer"
           >
             {session?.user?.image ? (
               <Image
