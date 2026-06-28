@@ -1,5 +1,6 @@
 "use server";
 
+import { assertAdmin, checkAdmin } from "@/lib/auth-guard";
 import { client } from "@/sanity/lib/client";
 import { sanityFetch } from "@/sanity/lib/live";
 import {
@@ -51,6 +52,7 @@ export async function fetchAdminReviewsPaged({
   rating = "all",
   status = "all",
 }: FetchReviewsParams): Promise<{ reviews: ReviewSummary[]; total: number }> {
+  await checkAdmin();
   try {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
@@ -124,6 +126,7 @@ export async function fetchAdminReviewsPaged({
  * Fetch aggregated statistics and ratings distribution
  */
 export async function fetchAdminReviewMetrics(): Promise<ReviewMetricsSummary> {
+  await checkAdmin();
   try {
     const query = groq`{
       "totalReviews": count(*[_type == "review"]),
@@ -181,7 +184,11 @@ export async function fetchAdminReviewMetrics(): Promise<ReviewMetricsSummary> {
 /**
  * Approve a review to publish it on the main site
  */
-export async function approveReviewAction(rawInput: unknown) {
+export async function approveReviewAction(
+  rawInput: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   const result = ApproveReviewSchema.safeParse(rawInput);
   if (!result.success) {
     return { success: false, error: "Invalid review parameters." };
@@ -202,7 +209,11 @@ export async function approveReviewAction(rawInput: unknown) {
 /**
  * Reject or retract approval of a review
  */
-export async function rejectReviewAction(rawInput: unknown) {
+export async function rejectReviewAction(
+  rawInput: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   const result = RejectReviewSchema.safeParse(rawInput);
   if (!result.success) {
     return { success: false, error: "Invalid review parameters." };
@@ -223,7 +234,11 @@ export async function rejectReviewAction(rawInput: unknown) {
 /**
  * Submit or update admin reply to a review
  */
-export async function replyToReviewAction(rawInput: unknown) {
+export async function replyToReviewAction(
+  rawInput: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   const result = ReplyReviewSchema.safeParse(rawInput);
   if (!result.success) {
     const errorMsg = result.error.message || "Invalid input";
@@ -245,7 +260,11 @@ export async function replyToReviewAction(rawInput: unknown) {
 /**
  * Permanently delete a review
  */
-export async function deleteReviewAction(rawInput: unknown) {
+export async function deleteReviewAction(
+  rawInput: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   const result = DeleteReviewSchema.safeParse(rawInput);
   if (!result.success) {
     return { success: false, error: "Invalid parameters." };

@@ -1,5 +1,6 @@
 "use server";
 
+import { assertAdmin, checkAdmin } from "@/lib/auth-guard";
 import { client } from "@/sanity/lib/client";
 import { sanityFetch } from "@/sanity/lib/live";
 import { UserSummary, OrderSummary, AddressSummary } from "@/types/admin";
@@ -46,6 +47,7 @@ export async function fetchAdminUsersPaged({
   sortBy = "date",
   sortOrder = "desc",
 }: FetchUsersParams) {
+  await checkAdmin();
   try {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
@@ -108,6 +110,7 @@ export async function fetchAdminUsersPaged({
 }
 
 export async function fetchAllUserRoles() {
+  await checkAdmin();
   try {
     const query = groq`*[_type == "userRole" && isActive == true] | order(priority desc) { _id, name }`;
     const { data: roles } = await sanityFetch({
@@ -122,7 +125,11 @@ export async function fetchAllUserRoles() {
   }
 }
 
-export async function saveUserDetailsAction(payload: unknown) {
+export async function saveUserDetailsAction(
+  payload: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     const parsed = SaveUserSchema.safeParse(payload);
     if (!parsed.success) {
@@ -151,7 +158,11 @@ export async function saveUserDetailsAction(payload: unknown) {
   }
 }
 
-export async function updateUserRoleAction(payload: unknown) {
+export async function updateUserRoleAction(
+  payload: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     const parsed = UpdateRoleSchema.safeParse(payload);
     if (!parsed.success) {
@@ -178,7 +189,11 @@ export async function updateUserRoleAction(payload: unknown) {
   }
 }
 
-export async function adjustUserWalletAction(payload: unknown) {
+export async function adjustUserWalletAction(
+  payload: unknown,
+): Promise<{ success: boolean; error?: string; newBalance?: number }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     const parsed = AdjustWalletSchema.safeParse(payload);
     if (!parsed.success) {
@@ -206,6 +221,7 @@ export async function adjustUserWalletAction(payload: unknown) {
 }
 
 export async function fetchUserAddresses(userId: string) {
+  await checkAdmin();
   try {
     const query = groq`*[_type == "address" && user._ref == $userId] | order(isDefault desc, _createdAt desc) {
       _id,
@@ -233,6 +249,7 @@ export async function fetchUserAddresses(userId: string) {
 }
 
 export async function fetchUserOrders(userEmail: string) {
+  await checkAdmin();
   try {
     const query = groq`*[_type == "order" && userEmail == $userEmail] | order(_createdAt desc) {
       _id,

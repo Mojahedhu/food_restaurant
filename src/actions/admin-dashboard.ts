@@ -9,8 +9,11 @@ import {
 } from "@/types/admin";
 import { groq } from "next-sanity";
 import { format, subDays } from "date-fns";
+import { checkAdmin } from "@/lib/auth-guard";
 
 export async function fetchDashboardMetrics(): Promise<DashboardStats> {
+  await checkAdmin();
+
   try {
     const query = groq`{
       "totalRevenue": coalesce(math::sum(*[_type == "order" && paymentStatus == "paid"].total), 0),
@@ -31,6 +34,8 @@ export async function fetchDashboardMetrics(): Promise<DashboardStats> {
 }
 
 export async function fetchDashboardRecentActivity(): Promise<RecentActivity> {
+  await checkAdmin();
+
   try {
     const query = groq`{
       "recentOrders": *[_type == "order"] | order(_createdAt desc)[0...5] {
@@ -74,6 +79,8 @@ export async function fetchDashboardRecentActivity(): Promise<RecentActivity> {
 export async function fetchSalesTrendsChartData(): Promise<
   RevenueChartPoint[]
 > {
+  await checkAdmin();
+
   try {
     // Query orders from the last 30 days
     const minDate = format(subDays(new Date(), 30), "yyyy-MM-dd");
@@ -129,6 +136,8 @@ export async function fetchSalesTrendsChartData(): Promise<
 export async function fetchOrderStatusDistribution(): Promise<
   StatusDistributionPoint[]
 > {
+  await checkAdmin();
+
   try {
     const query = groq`*[_type == "orderStatus" && isActive == true] | order(order asc) {
       _id,

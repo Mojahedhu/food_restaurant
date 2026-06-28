@@ -1,5 +1,6 @@
 "use server";
 
+import { assertAdmin, checkAdmin } from "@/lib/auth-guard";
 import { client, writeClient } from "@/sanity/lib/client";
 import { sanityFetch } from "@/sanity/lib/live";
 import { ProductSummary } from "@/types/admin";
@@ -42,6 +43,7 @@ export async function fetchAdminProductsPaged({
   category = "",
   available = "",
 }: FetchProductsParams) {
+  await checkAdmin();
   try {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
@@ -103,6 +105,7 @@ export async function fetchAdminProductsPaged({
 }
 
 export async function fetchAllCategories() {
+  await checkAdmin();
   try {
     const query = groq`*[_type == "category"] | order(name asc) { _id, name }`;
     const { data: categories } = await sanityFetch({
@@ -117,7 +120,11 @@ export async function fetchAllCategories() {
   }
 }
 
-export async function toggleProductAvailability(payload: unknown) {
+export async function toggleProductAvailability(
+  payload: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     const parsed = ToggleAvailabilitySchema.safeParse(payload);
     if (!parsed.success) {
@@ -136,7 +143,11 @@ export async function toggleProductAvailability(payload: unknown) {
   }
 }
 
-export async function uploadProductImageAction(formData: FormData) {
+export async function uploadProductImageAction(
+  formData: FormData,
+): Promise<{ success: boolean; error?: string; assetId?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     const file = formData.get("image") as File;
     if (!file) {
@@ -159,7 +170,11 @@ export async function uploadProductImageAction(formData: FormData) {
   }
 }
 
-export async function saveProductAction(payload: unknown) {
+export async function saveProductAction(
+  payload: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     const parsed = SaveProductSchema.safeParse(payload);
     if (!parsed.success) {
@@ -251,7 +266,11 @@ export async function saveProductAction(payload: unknown) {
   }
 }
 
-export async function createCategoryAction(payload: unknown) {
+export async function createCategoryAction(
+  payload: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     const parsed = CreateCategorySchema.safeParse(payload);
     if (!parsed.success) {

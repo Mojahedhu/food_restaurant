@@ -5,6 +5,7 @@ import { groq } from "next-sanity";
 import { OrderSummary } from "@/types/admin";
 import { sanityFetch } from "@/sanity/lib/live";
 import { revalidateTag } from "next/cache";
+import { assertAdmin, checkAdmin } from "@/lib/auth-guard";
 
 /**
  * Fetches a list of recent orders for the admin dashboard.
@@ -12,6 +13,7 @@ import { revalidateTag } from "next/cache";
  * already has userName and userEmail natively on the Order document!
  */
 export async function fetchAdminOrders(): Promise<OrderSummary[]> {
+  await checkAdmin();
   try {
     // GROQ Query: Fetch orders, order by newest first.
     // The Sanity schema natively has 'total', 'userName', 'userEmail', and 'status' (which is a reference).
@@ -71,7 +73,9 @@ export async function updateOrderAction(
       | undefined;
     total: number;
   },
-) {
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     // Perform standard transaction patch using the authorized write client
     await client
@@ -116,6 +120,7 @@ export async function fetchAdminOrdersPaged({
   sortBy = "date",
   sortOrder = "desc",
 }: FetchOrdersParams): Promise<{ totalItems: number; orders: OrderSummary[] }> {
+  await checkAdmin();
   try {
     const start = (page - 1) * pageSize;
     const end = start + pageSize;

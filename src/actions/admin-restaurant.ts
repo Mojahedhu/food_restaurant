@@ -1,5 +1,6 @@
 "use server";
 
+import { assertAdmin, checkAdmin } from "@/lib/auth-guard";
 import { writeClient } from "@/sanity/lib/client";
 import { sanityFetch } from "@/sanity/lib/live";
 import { RestaurantDetails, ScheduleSummary } from "@/types/admin";
@@ -74,6 +75,7 @@ export async function fetchAdminRestaurants(options?: {
   status?: string;
   featured?: string;
 }): Promise<{ restaurants: RestaurantDetails[]; totalItems: number }> {
+  await checkAdmin();
   try {
     const page = options?.page || 1;
     const pageSize = options?.pageSize || 5; // Default to 5 to make pagination visible
@@ -164,6 +166,7 @@ export async function fetchAdminRestaurants(options?: {
 export async function fetchRestaurantDetails(
   id: string,
 ): Promise<RestaurantDetails | null> {
+  await checkAdmin();
   try {
     const query = groq`*[_type == "restaurant" && _id == $id][0] {
       _id,
@@ -205,6 +208,7 @@ export async function fetchRestaurantDetails(
  * Fetch all available opening hours schedule templates
  */
 export async function fetchAllSchedules(): Promise<ScheduleSummary[]> {
+  await checkAdmin();
   try {
     const query = groq`*[_type == "openingHours"] | order(name asc) {
       _id,
@@ -228,7 +232,9 @@ export async function fetchAllSchedules(): Promise<ScheduleSummary[]> {
 export async function assignScheduleToRestaurantAction(
   restaurantId: string,
   openingHoursId: string,
-) {
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     await writeClient
       .patch(restaurantId)
@@ -256,7 +262,9 @@ export async function assignScheduleToRestaurantAction(
 export async function createAndLinkScheduleAction(
   restaurantId: string,
   name: string,
-) {
+): Promise<{ success: boolean; error?: string; openingHoursId?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     if (name.trim().toLowerCase() === "standard hours") {
       return {
@@ -351,7 +359,11 @@ export async function createAndLinkScheduleAction(
  * Delete a custom opening hours schedule template safely.
  * Any restaurants referencing it will be automatically reverted to "Standard Hours" reference.
  */
-export async function deleteScheduleAction(openingHoursId: string) {
+export async function deleteScheduleAction(
+  openingHoursId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
   try {
     // 1. Fetch target schedule metadata
     const currentDoc = (await writeClient.getDocument(openingHoursId)) as {
@@ -425,7 +437,12 @@ export async function deleteScheduleAction(openingHoursId: string) {
 /**
  * Toggle restaurant active status (order acceptance status)
  */
-export async function toggleRestaurantActiveAction(rawInput: unknown) {
+export async function toggleRestaurantActiveAction(
+  rawInput: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
+
   const result = ToggleActiveSchema.safeParse(rawInput);
   if (!result.success) {
     return { success: false, error: "Invalid parameters." };
@@ -448,7 +465,12 @@ export async function toggleRestaurantActiveAction(rawInput: unknown) {
 /**
  * Upload logo/image to Sanity
  */
-export async function uploadRestaurantImageAction(formData: FormData) {
+export async function uploadRestaurantImageAction(
+  formData: FormData,
+): Promise<{ success: boolean; error?: string; assetId?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
+
   try {
     const file = formData.get("image") as File;
     if (!file) {
@@ -473,7 +495,12 @@ export async function uploadRestaurantImageAction(formData: FormData) {
 /**
  * Update general, location, and delivery details of a restaurant
  */
-export async function saveRestaurantDetailsAction(rawInput: unknown) {
+export async function saveRestaurantDetailsAction(
+  rawInput: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
+
   const result = SaveDetailsSchema.safeParse(rawInput);
   if (!result.success) {
     const errorMsg = result.error.issues
@@ -543,7 +570,12 @@ export async function saveRestaurantDetailsAction(rawInput: unknown) {
 /**
  * Update daily opening hours schedules
  */
-export async function saveOpeningHoursAction(rawInput: unknown) {
+export async function saveOpeningHoursAction(
+  rawInput: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
+
   const result = SaveHoursSchema.safeParse(rawInput);
   if (!result.success) {
     return { success: false, error: "Invalid schedule format." };
