@@ -11,6 +11,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Trash,
 } from "lucide-react";
 
 import {
@@ -36,6 +37,7 @@ import { OrderDetailsSheet } from "./orderDetailsSheet";
 import { useOrdersLogic } from "@/hooks/useOrdersLogic";
 import { toast } from "sonner";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import OrderDeleteDialog from "./orderDeleteDialog";
 
 interface OrdersTableProps {
   initialOrders: OrderSummary[];
@@ -45,6 +47,9 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  // 1. Register a state to track which order is queued for deletion
+  const [deletingOrderId, setDeletingOrderId] = useState<string | null>(null);
 
   const currentSortBy = searchParams.get("sortBy") || "date";
   const currentSortOrder = searchParams.get("sortOrder") || "desc";
@@ -76,7 +81,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
 
   // Phase 5 will introduce useOrdersLogic hook here for optimistic updates
   // Use custom optimistic hook
-  const { orders, isPending, handleUpdateOrder } =
+  const { orders, isPending, handleUpdateOrder, handleDeleteOrder } =
     useOrdersLogic(initialOrders);
   // Add state to track the currently selected order for the Sheet
   const [selectedOrder, setSelectedOrder] = useState<OrderSummary | null>(null);
@@ -212,7 +217,7 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-8 w-8 p-0 text-foreground hover:text-primary hover:bg-secondary/50 transition-colors duration-300 focus:text-primary focus:bg-secondary/50"
+                        className="h-8 w-8 p-0 text-foreground hover:text-primary hover:bg-secondary/50 transition-colors duration-300 focus:text-primary focus:bg-secondary/50 cursor-pointer"
                       >
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
@@ -221,12 +226,16 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                     <DropdownMenuContent align="end" className="w-[160px]">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
                       {/* Inside the DropdownMenu mapping: */}
-                      <DropdownMenuItem onClick={() => setSelectedOrder(order)}>
+                      <DropdownMenuItem
+                        onClick={() => setSelectedOrder(order)}
+                        className="cursor-pointer"
+                      >
                         <FileText className="mr-2 h-4 w-4" />
                         View Details
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
+                        className="cursor-pointer"
                         onClick={() => {
                           if (order.paymentStatus === "paid") {
                             toast.warning("Order is already paid");
@@ -244,9 +253,18 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
                         <CheckCircle2 className="mr-2 h-4 w-4 text-primary" />
                         Mark as Paid
                       </DropdownMenuItem>
-                      <DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer">
                         <Truck className="mr-2 h-4 w-4 text-primary" />
                         Mark as Shipped
+                      </DropdownMenuItem>
+                      {/* 2. Add Delete option in DropdownMenuContent: */}
+                      <DropdownMenuItem
+                        className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+                        onClick={() => setDeletingOrderId(order._id)}
+                        disabled={isPending}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete Order
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -266,6 +284,13 @@ export function OrdersTable({ initialOrders }: OrdersTableProps) {
         //   console.log("Saving updates for", orderId, updates);
         // }}
         onSave={handleUpdateOrder} // Hook save updates up directly
+        isPending={isPending}
+      />
+      {/* 3. Add AlertDialog component at the bottom of the page container: */}
+      <OrderDeleteDialog
+        deletingOrderId={deletingOrderId}
+        setDeletingOrderId={setDeletingOrderId}
+        handleDeleteOrder={handleDeleteOrder}
         isPending={isPending}
       />
     </div>

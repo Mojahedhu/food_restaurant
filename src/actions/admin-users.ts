@@ -7,6 +7,7 @@ import { UserSummary, OrderSummary, AddressSummary } from "@/types/admin";
 import { groq } from "next-sanity";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
+import auth from "../../auth";
 
 const SaveUserSchema = z.object({
   userId: z.string().min(1),
@@ -28,6 +29,10 @@ const UpdateRoleSchema = z.object({
 const AdjustWalletSchema = z.object({
   userId: z.string().min(1),
   amount: z.number(),
+});
+
+const DeleteUserSchema = z.object({
+  userId: z.string().min(1, "User ID is required"),
 });
 
 interface FetchUsersParams {
@@ -52,7 +57,7 @@ export async function fetchAdminUsersPaged({
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
 
-    let filterClauses = `_type == "user"`;
+    let filterClauses = `_type == "user" && !isDeleted`;
     const params: Record<string, string | number> = { start, end };
 
     if (search.trim()) {
@@ -268,5 +273,61 @@ export async function fetchUserOrders(userEmail: string) {
   } catch (error) {
     console.error("Failed to fetch user orders:", error);
     return [];
+  }
+}
+
+export async function deleteUserAction(
+  payload: unknown,
+): Promise<{ success: boolean; error?: string }> {
+  // 1. Enforce Admin verification
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
+
+  // 2. Validate input parameters via Zod
+  const parsed = DeleteUserSchema.safeParse(payload);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid User ID structure" };
+  }
+
+  const { userId } = parsed.data;
+
+  // 3. Admin Edge Case: Self-deletion prevention
+  try {
+    const session = await auth();
+    const operatorId = session?.user?.id;
+
+    if (operatorId && operatorId === userId) {
+      return {
+        success: false,
+        error:
+          "Action Denied: You cannot delete your own administrative account.",
+      };
+    }
+
+    // 4. Perform GDPR-compliant anonymization patch
+    await client
+      .patch(userId)
+      .set({
+        name: "Deleted Account",
+        email: `deleted-${userId.slice(0, 8)}@disabled-account.com`,
+        phoneNumber: "",
+        bio: "",
+        walletBalance: 0,
+        image: null,
+        isDeleted: true,
+      })
+      .commit();
+
+    // 5. Revalidate cache
+    revalidateTag("users", "max");
+    return { success: true };
+  } catch (error) {
+    // 6. Log raw error and mask client response
+    // Log raw error internally and return clean message to the client
+    console.error(`Failed to soft-delete user ${userId} in Sanity:`, error);
+    return {
+      success: false,
+      error: "Failed to delete user account due to a database error.",
+    };
   }
 }

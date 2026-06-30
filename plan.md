@@ -51,15 +51,16 @@ You must follow these strict guidelines for every single code generation task in
 
 - **Zero Implicit `any` Allowances:** Keep the TypeScript compiler flags strict (`noImplicitAny: true`). If a variable structure is unpredictable or dynamic, explicitly assign it an `unknown` or record structure and narrow the type before processing (dont use `any` at all).
 - **Keep Component Complexity Low:** Avoid deep, nested utility architectures. Keep UI files modular, atomic, and focused on rendering single concepts so that onboarding developers can easily read, modify, and manage features without battling state entanglement.
-- **Official Third-Party Types Only:** Always use official types from external libraries for type definitions. Do not define or duplicate third-party library types locally. Import them directly from the official dependency module package to ensure total cross-version synchronization. *Exception Guard:* If a library has missing, broken, or unexported types, declare a clean, scoped type definition locally or use safe type narrowing (`unknown` paired with assertions) instead of blocking compilation or resorting to raw `any` tags.
+- **Official Third-Party Types Only:** Always use official types from external libraries for type definitions. Do not define or duplicate third-party library types locally. Import them directly from the official dependency module package to ensure total cross-version synchronization. _Exception Guard:_ If a library has missing, broken, or unexported types, declare a clean, scoped type definition locally or use safe type narrowing (`unknown` paired with assertions) instead of blocking compilation or resorting to raw `any` tags.
 
 ## 7. Architecture & Code Cleanliness (React/Next.js Optimized)
 
 - **Strict Separation of Concerns & Modular Architecture:** Enforce a strict decoupling of UI, logic, data, and types. A single component file must only manage layout and presentation.
-  - **UI/Presentation:** Keep JSX/TSX lean; delegate all complex state, side effects, and event handlers to dedicated **Custom Hooks** (e.g., `useTaskManager`). *Boilerplate Guard:* Progressive abstraction is preferred. For simple UI components (under 50 lines with basic local toggles), keeping state inline is allowed. Abstract into a custom hook only when the component handles asynchronous fetches, side-effects, or complex business logic.
+  - **UI/Presentation:** Keep JSX/TSX lean; delegate all complex state, side effects, and event handlers to dedicated **Custom Hooks** (e.g., `useTaskManager`). _Boilerplate Guard:_ Progressive abstraction is preferred. For simple UI components (under 50 lines with basic local toggles), keeping state inline is allowed. Abstract into a custom hook only when the component handles asynchronous fetches, side-effects, or complex business logic.
   - **Data Layer & Utils:** Isolate API fetching, data mutations, and heavy business logic into separate service modules, server actions, or utility files.
   - **Type Definitions:** Extract TypeScript interfaces and types into localized or global `.types.ts` files rather than inlining them.
   - **Maximized Reusability:** Break down large component trees into highly atomized, pure, and reusable UI components. If a logic block or utility function is used more than once (or exceeds 20 lines), abstract it.
+  - **Do not put everything in one file:** create clean code and well-organized files structure. keep files small and focused on a single responsibility.split large components into smaller, reusable components. Keep components small, focused, and easy to reason about. Avoid deep nesting and unnecessary abstractions.
 
 ## 8. Caching & Data Consistency (Next.js Revalidation)
 

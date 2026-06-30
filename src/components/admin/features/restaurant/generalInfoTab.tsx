@@ -60,7 +60,9 @@ export function GeneralInfoTab({ formLogic, logoUrl }: GeneralInfoTabProps) {
                   src={displayImage}
                   alt="Restaurant Logo"
                   fill
+                  sizes="(max-width: 640px) 128px, 256px"
                   className="object-cover"
+                  loading="eager"
                 />
               ) : (
                 <ImageIcon className="size-8 text-muted-foreground opacity-40" />

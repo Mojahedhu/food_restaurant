@@ -9,7 +9,7 @@ import { LocationTab } from "./locationTab";
 import { OpeningHoursTab } from "./openingHoursTab";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Landmark, Truck, Map, CalendarRange } from "lucide-react";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { GeneralInfoTab } from "./generalInfoTab";
 import { useState } from "react";
 import { ScheduleSummary } from "@/types/admin";

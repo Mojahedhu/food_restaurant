@@ -124,6 +124,12 @@ export default defineType({
       initialValue: 0,
       validation: (Rule) => Rule.min(0),
     }),
+    defineField({
+      name: "isDeleted",
+      title: "Is Deleted",
+      type: "boolean",
+      initialValue: false,
+    }),
   ],
   preview: {
     select: {

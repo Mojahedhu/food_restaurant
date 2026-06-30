@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { ArrowLeft, Menu } from "lucide-react";
 import { Sidebar } from "./sidebar";
 import {

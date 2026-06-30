@@ -6,6 +6,7 @@ import {
   updateUserRoleAction,
   saveUserDetailsAction,
   adjustUserWalletAction,
+  deleteUserAction,
 } from "@/actions/admin-users";
 import { toast } from "sonner";
 import { UserRoleReference } from "../../sanity.types";
@@ -15,6 +16,8 @@ export function useUsersLogic(initialUsers: UserSummary[]) {
   const [localUpdates, setLocalUpdates] = useState<
     Record<string, Partial<UserSummary>>
   >({});
+  // 1. Add deleted IDs state:
+  const [deletedUserIds, setDeletedUserIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -44,10 +47,13 @@ export function useUsersLogic(initialUsers: UserSummary[]) {
     });
   }, [initialUsers]);
 
-  const users = (initialUsers || []).map((user) => {
-    const update = localUpdates[user._id];
-    return update ? { ...user, ...update } : user;
-  });
+  // 2. Filter users list and apply local updates before rendering
+  const users = (initialUsers || [])
+    .filter((user) => !deletedUserIds.has(user._id))
+    .map((user) => {
+      const update = localUpdates[user._id];
+      return update ? { ...user, ...update } : user;
+    });
 
   const handleUpdateRole = async (
     userId: string,
@@ -124,11 +130,40 @@ export function useUsersLogic(initialUsers: UserSummary[]) {
     });
   };
 
+  // 3. Implement handleDeleteUser method:
+  const handleDeleteUser = async (userId: string) => {
+    // Optimistically remove user from view
+    setDeletedUserIds((prev) => {
+      const next = new Set(prev);
+      next.add(userId);
+      return next;
+    });
+
+    startTransition(async () => {
+      const result = await deleteUserAction({ userId });
+
+      if (result.success) {
+        toast.success("User account deleted successfully.");
+      } else {
+        toast.error(
+          result.error || "Failed to delete user. Reverting changes.",
+        );
+        // Rollback optimistic update on failure
+        setDeletedUserIds((prev) => {
+          const next = new Set(prev);
+          next.delete(userId);
+          return next;
+        });
+      }
+    });
+  };
+
   return {
     users,
     isPending,
     handleUpdateRole,
     handleSaveDetails,
     handleAdjustWallet,
+    handleDeleteUser,
   };
 }

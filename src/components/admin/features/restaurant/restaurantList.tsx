@@ -1,7 +1,7 @@
 "use client";
 import { RestaurantDetails } from "@/types/admin";
 import { useRestaurantLogic } from "@/hooks/useRestaurantLogic";
-import { Link } from "next-view-transitions";
+import Link from "next/link";
 import { urlFor } from "@/sanity/lib/image";
 import {
   Table,

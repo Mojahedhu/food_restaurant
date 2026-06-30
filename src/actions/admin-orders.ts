@@ -6,6 +6,11 @@ import { OrderSummary } from "@/types/admin";
 import { sanityFetch } from "@/sanity/lib/live";
 import { revalidateTag } from "next/cache";
 import { assertAdmin, checkAdmin } from "@/lib/auth-guard";
+import { z } from "zod";
+
+const deleteOrderSchema = z.object({
+  orderId: z.string().min(1, "Order ID is required"),
+});
 
 /**
  * Fetches a list of recent orders for the admin dashboard.
@@ -181,5 +186,34 @@ export async function fetchAdminOrdersPaged({
   } catch (error) {
     console.error("Failed to fetch filtered admin orders:", error);
     return { totalItems: 0, orders: [] };
+  }
+}
+
+export async function deleteOrderAction(
+  orderIdInput: string,
+): Promise<{ success: boolean; error?: string }> {
+  // 1. Authenticate user role
+  const guard = await assertAdmin();
+  if (!guard.success) return guard;
+
+  // 2. Validate input format
+  const parsed = deleteOrderSchema.safeParse({ orderId: orderIdInput });
+  if (!parsed.success) {
+    return { success: false, error: "Invalid Order ID structure" };
+  }
+
+  const { orderId } = parsed.data;
+
+  try {
+    // 3. Perform write mutation on database
+    await client.delete(orderId);
+
+    // 4. Force Next.js cache revalidation
+    revalidateTag("orders", "nax");
+    return { success: true };
+  } catch (error) {
+    // 5. Hide database/technical details from client payload
+    console.error(`Failed to delete order ${orderId} in Sanity:`, error);
+    return { success: false, error: "An unexpected database error occurred" };
   }
 }

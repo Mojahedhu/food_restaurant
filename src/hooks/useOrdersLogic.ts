@@ -1,7 +1,7 @@
 "use client";
 import { useTransition, useState, useEffect } from "react";
 import { OrderSummary } from "@/types/admin";
-import { updateOrderAction } from "@/actions/admin-orders";
+import { deleteOrderAction, updateOrderAction } from "@/actions/admin-orders";
 import { toast } from "sonner"; // Using standard toast component alerts
 export function useOrdersLogic(initialOrders: OrderSummary[]) {
   // 1. Concurrent transitions handler
@@ -11,6 +11,10 @@ export function useOrdersLogic(initialOrders: OrderSummary[]) {
   const [localUpdates, setLocalUpdates] = useState<
     Record<string, Partial<OrderSummary>>
   >({});
+  // 1. New state variable in hook:
+  const [deletedOrderIds, setDeletedOrderIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   // Sync and clean up local overrides when server data catches up
   useEffect(() => {
@@ -38,11 +42,13 @@ export function useOrdersLogic(initialOrders: OrderSummary[]) {
     });
   }, [initialOrders]);
 
-  // Merge server data with active local overrides
-  const orders = initialOrders.map((order) => {
-    const update = localUpdates[order._id];
-    return update ? { ...order, ...update } : order;
-  });
+  // Filter list in hook and merge server data with active local overrides
+  const orders = initialOrders
+    .filter((order) => !deletedOrderIds.has(order._id))
+    .map((order) => {
+      const update = localUpdates[order._id];
+      return update ? { ...order, ...update } : order;
+    });
 
   // 3. UI save handler
   const handleUpdateOrder = async (
@@ -90,9 +96,39 @@ export function useOrdersLogic(initialOrders: OrderSummary[]) {
     });
     // Execute background update
   };
+
+  // 4. New handleDeleteOrder method:
+  const handleDeleteOrder = async (orderId: string) => {
+    // Optimistically hide the order from layout
+    setDeletedOrderIds((prev) => {
+      const next = new Set(prev);
+      next.add(orderId);
+      return next;
+    });
+
+    startTransition(async () => {
+      const result = await deleteOrderAction(orderId);
+
+      if (result.success) {
+        toast.success("Order deleted successfully! 🗑️");
+      } else {
+        toast.error(
+          result.error || "Failed to delete order. Reverting changes.",
+        );
+        // Revert optimistic deletion on failure
+        setDeletedOrderIds((prev) => {
+          const next = new Set(prev);
+          next.delete(orderId);
+          return next;
+        });
+      }
+    });
+  };
+
   return {
     orders,
     isPending,
     handleUpdateOrder,
+    handleDeleteOrder,
   };
 }

@@ -58,7 +58,7 @@ export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
 
       <UsersFilterBar roles={roles} />
 
-      <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden p-6">
+      <div className="bg-white rounded-xl border border-border shadow-sm overflow-hidden p-0">
         <Suspense fallback={<UsersTableSkeleton />}>
           <UsersTable initialUsers={users} roles={roles} />
 

@@ -75,7 +75,7 @@ export const POST = async (req: NextRequest) => {
       { status: 201 },
     );
   } catch (error) {
-    console.log("Signup error", error);
+    console.error("Signup error", error);
     return NextResponse.json(
       { error: "Failed to create account" },
       { status: 500 },
