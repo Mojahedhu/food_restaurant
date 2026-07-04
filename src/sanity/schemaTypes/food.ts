@@ -96,12 +96,17 @@ export default defineType({
         {
           type: "image",
           options: {
-            hotspot: true,
+            hotspot: true, // Enables visual cropping in Sanity Studio
           },
         },
       ],
-      description: "First image will be use the main product image",
-      validation: (Rule) => Rule.required().min(1),
+      description:
+        "Upload up to 6 images. The first image in the grid will be used as the primary cover image.",
+      validation: (Rule) =>
+        Rule.required()
+          .min(1)
+          .max(6)
+          .error("A product must have between 1 and 6 images."),
     }),
     defineField({
       name: "ingredients",
@@ -111,7 +116,7 @@ export default defineType({
       description: "Link ingredients to this food item",
     }),
     defineField({
-      name: "PreparationTime",
+      name: "preparationTime",
       title: "Preparation Time (minutes)",
       type: "number",
     }),
@@ -141,30 +146,30 @@ export default defineType({
       initialValue: false,
     }),
     defineField({
-   name:"ratingCount",
-   type:"number",
-   initialValue:0,
-   validation: (Rule) => Rule.required().min(0),
-}),
+      name: "ratingCount",
+      type: "number",
+      initialValue: 0,
+      validation: (Rule) => Rule.required().min(0),
+    }),
 
-defineField({
-   name:"ratingSum",
-   type:"number",
-   initialValue:0,
-   validation: (Rule) => Rule.required().min(0),
-}),
+    defineField({
+      name: "ratingSum",
+      type: "number",
+      initialValue: 0,
+      validation: (Rule) => Rule.required().min(0),
+    }),
 
-defineField({
-   name:"weightedRating",
-   type:"number",
-   initialValue:0,
-   validation: (Rule) => Rule.required().min(0),
-}),
-defineField({
-  name: "ratingAverage",
-  type: "number",
-  initialValue: 0,
-}),
+    defineField({
+      name: "weightedRating",
+      type: "number",
+      initialValue: 0,
+      validation: (Rule) => Rule.required().min(0),
+    }),
+    defineField({
+      name: "ratingAverage",
+      type: "number",
+      initialValue: 0,
+    }),
     defineField({
       name: "order",
       title: "Display Order",

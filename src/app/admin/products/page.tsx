@@ -3,6 +3,9 @@ import { Suspense } from "react";
 import {
   fetchAdminProductsPaged,
   fetchAllCategories,
+  fetchAllIngredients,
+  fetchAllSizes,
+  fetchAllVarieties,
 } from "@/actions/admin-products";
 import { ProductsTable } from "@/components/admin/features/products/productsTable";
 import { ProductsFilterBar } from "@/components/admin/features/products/productsFilterBar";
@@ -37,16 +40,20 @@ export default async function AdminProductsPage({
   const pageSize = 10;
 
   // 2. Fetch page products and dynamic categories in parallel on the server
-  const [{ totalItems, products }, categories] = await Promise.all([
-    fetchAdminProductsPaged({
-      page: currentPage,
-      pageSize,
-      search,
-      category,
-      available,
-    }),
-    fetchAllCategories(),
-  ]);
+  const [{ totalItems, products }, categories, varieties, sizes, ingredients] =
+    await Promise.all([
+      fetchAdminProductsPaged({
+        page: currentPage,
+        pageSize,
+        search,
+        category,
+        available,
+      }),
+      fetchAllCategories(),
+      fetchAllVarieties(),
+      fetchAllSizes(),
+      fetchAllIngredients(),
+    ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -69,7 +76,13 @@ export default async function AdminProductsPage({
       {/* Main Data Table & Pagination Controls */}
       <div className="bg-white dark:bg-card rounded-xl border border-border shadow-sm overflow-hidden p-6">
         <Suspense fallback={<ProductsTableSkeleton />}>
-          <ProductsTable initialProducts={products} categories={categories} />
+          <ProductsTable
+            initialProducts={products}
+            categories={categories}
+            varieties={varieties}
+            sizes={sizes}
+            ingredients={ingredients}
+          />
 
           <PaginationControls
             totalItems={totalItems}

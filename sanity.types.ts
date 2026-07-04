@@ -460,7 +460,7 @@ export type Food = {
       _key: string;
     } & IngredientReference
   >;
-  PreparationTime?: number;
+  preparationTime?: number;
   spiceLevel?: "mild" | "medium" | "hot" | "extra-Hot";
   available?: boolean;
   featured?: boolean;

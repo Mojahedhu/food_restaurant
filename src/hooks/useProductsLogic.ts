@@ -6,6 +6,7 @@ import {
   toggleProductAvailability,
   saveProductAction,
   uploadProductImageAction,
+  deleteProductAction,
 } from "@/actions/admin-products";
 import { compressImage } from "@/lib/image-compressor";
 import { toast } from "sonner";
@@ -15,6 +16,10 @@ export function useProductsLogic(initialProducts: ProductSummary[]) {
   const [localUpdates, setLocalUpdates] = useState<
     Record<string, Partial<ProductSummary>>
   >({});
+  // 1. Add deleted IDs state inside useProductsLogic:
+  const [deletedProductIds, setDeletedProductIds] = useState<Set<string>>(
+    new Set(),
+  );
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -45,10 +50,13 @@ export function useProductsLogic(initialProducts: ProductSummary[]) {
     });
   }, [initialProducts]);
 
-  const products = (initialProducts || []).map((product) => {
-    const update = localUpdates[product._id];
-    return update ? { ...product, ...update } : product;
-  });
+  // 2. Filter the products array inside useProductsLogic:
+  const products = (initialProducts || [])
+    .filter((product) => !deletedProductIds.has(product._id))
+    .map((product) => {
+      const update = localUpdates[product._id];
+      return update ? { ...product, ...update } : product;
+    });
 
   const handleToggleAvailability = async (
     productId: string,
@@ -79,15 +87,25 @@ export function useProductsLogic(initialProducts: ProductSummary[]) {
     });
   };
 
+  interface SaveUpdates {
+    name: string;
+    price: number;
+    order: number;
+    categoryRefId: string;
+    description?: string;
+    preparationTime?: number;
+    spiceLevel?: string;
+    enableAllSizes: boolean;
+    featured?: boolean;
+    imageAssetIds: string[]; // 👈 Array of uploaded Sanity asset IDs
+    sizeIds: string[];
+    varietyIds: string[];
+    ingredientIds: string[];
+  }
+
   const handleSaveProduct = async (
     productId: string | undefined, // undefined for new creations
-    updates: {
-      name: string;
-      price: number;
-      categoryRefId: string;
-      description?: string;
-      imageFile?: File;
-    },
+    updates: SaveUpdates,
   ) => {
     if (productId) {
       setLocalUpdates((prev) => ({
@@ -100,45 +118,45 @@ export function useProductsLogic(initialProducts: ProductSummary[]) {
       }));
     }
 
-    let imageAssetId: string | undefined = undefined;
+    // let imageAssetId: string | undefined = undefined;
 
-    // 1. Compress & Upload image if selected
-    if (updates.imageFile) {
-      try {
-        const compressedBlob = await compressImage(updates.imageFile);
-        const compressedFile = new File(
-          [compressedBlob],
-          updates.imageFile.name,
-          {
-            type: "image/jpeg",
-          },
-        );
+    // // 1. Compress & Upload image if selected
+    // if (updates.imageFile) {
+    //   try {
+    //     const compressedBlob = await compressImage(updates.imageFile);
+    //     const compressedFile = new File(
+    //       [compressedBlob],
+    //       updates.imageFile.name,
+    //       {
+    //         type: "image/jpeg",
+    //       },
+    //     );
 
-        const formData = new FormData();
-        formData.append("image", compressedFile);
+    //     const formData = new FormData();
+    //     formData.append("image", compressedFile);
 
-        const uploadResult = await uploadProductImageAction(formData);
-        if (!uploadResult.success || !uploadResult.assetId) {
-          throw new Error(uploadResult.error || "Upload failed");
-        }
-        imageAssetId = uploadResult.assetId;
-      } catch (err: unknown) {
-        console.error("err in useProductsLogic: ", err);
-        if (err instanceof Error) {
-          toast.error(`Image upload failed: ${err.message}`);
-        } else {
-          toast.error("Image upload failed");
-        }
-        if (productId) {
-          setLocalUpdates((prev) => {
-            const next = { ...prev };
-            delete next[productId];
-            return next;
-          });
-        }
-        return;
-      }
-    }
+    //     const uploadResult = await uploadProductImageAction(formData);
+    //     if (!uploadResult.success || !uploadResult.assetId) {
+    //       throw new Error(uploadResult.error || "Upload failed");
+    //     }
+    //     imageAssetId = uploadResult.assetId;
+    //   } catch (err: unknown) {
+    //     console.error("err in useProductsLogic: ", err);
+    //     if (err instanceof Error) {
+    //       toast.error(`Image upload failed: ${err.message}`);
+    //     } else {
+    //       toast.error("Image upload failed");
+    //     }
+    //     if (productId) {
+    //       setLocalUpdates((prev) => {
+    //         const next = { ...prev };
+    //         delete next[productId];
+    //         return next;
+    //       });
+    //     }
+    //     return;
+    //   }
+    // }
 
     // 2. Save product metadata
     startTransition(async () => {
@@ -146,9 +164,17 @@ export function useProductsLogic(initialProducts: ProductSummary[]) {
         productId,
         name: updates.name,
         price: updates.price,
+        order: updates.order,
         categoryRefId: updates.categoryRefId,
         description: updates.description,
-        imageAssetId,
+        preparationTime: updates.preparationTime,
+        spiceLevel: updates.spiceLevel,
+        enableAllSizes: updates.enableAllSizes,
+        featured: updates.featured,
+        imageAssetIds: updates.imageAssetIds,
+        sizeIds: updates.sizeIds,
+        varietyIds: updates.varietyIds,
+        ingredientIds: updates.ingredientIds,
       });
 
       if (result.success) {
@@ -166,10 +192,37 @@ export function useProductsLogic(initialProducts: ProductSummary[]) {
     });
   };
 
+  // 3. Implement handleDeleteProduct transition:
+  const handleDeleteProduct = async (productId: string) => {
+    // Optimistically remove product from view instantly
+    setDeletedProductIds((prev) => {
+      const next = new Set(prev);
+      next.add(productId);
+      return next;
+    });
+
+    startTransition(async () => {
+      const result = await deleteProductAction({ productId });
+
+      if (result.success) {
+        toast.success("Product deleted successfully. 🗑️");
+      } else {
+        toast.error(result.error || "Failed to delete product. Reverting.");
+        // Rollback optimistic update on failure
+        setDeletedProductIds((prev) => {
+          const next = new Set(prev);
+          next.delete(productId);
+          return next;
+        });
+      }
+    });
+  };
+
   return {
     products,
     isPending,
     handleToggleAvailability,
     handleSaveProduct,
+    handleDeleteProduct,
   };
 }

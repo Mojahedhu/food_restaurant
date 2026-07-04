@@ -28,11 +28,20 @@ export type ProductSummary = Omit<
     | "_id"
     | "name"
     | "price"
+    | "order"
     | "category"
     | "available"
     | "images"
     | "description"
-  >,
+    | "preparationTime"
+    | "spiceLevel"
+    | "enableAllSizes"
+    | "featured"
+  > & {
+    sizes: Array<{ _id: string; name: string }>;
+    varieties: Array<{ _id: string; name: string }>;
+    ingredients: Array<{ _id: string; name: string }>;
+  },
   "category"
 > & {
   category: { _id: string; name?: string } | null;
