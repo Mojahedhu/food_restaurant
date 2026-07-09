@@ -1,16 +1,14 @@
 import auth from "@/../auth";
 import { redirect } from "next/navigation";
 
-const RootLayout = async ({
+export default async function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) => {
+}: Readonly<{ children: React.ReactNode }>) {
   const user = await auth();
 
   if (user?.user?.email) {
     redirect("/");
   }
 
-  return { children };
-};
-
-export default RootLayout;
+  return children;
+}
