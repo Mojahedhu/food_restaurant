@@ -5,7 +5,7 @@ import { Fallback } from "../_components/authSkeleton";
 
 function SignUpPage() {
   return (
-    <ViewTransition name="auth-modal">
+    <ViewTransition name="animate-modal-enter">
       <AuthModal>
         <Suspense fallback={<Fallback />}>
           <SignUpForm variant="modal" />

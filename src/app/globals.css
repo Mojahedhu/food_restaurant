@@ -177,7 +177,6 @@
 @theme {
   --animate-status-pulse: status-pulse 2s ease-out infinite;
   --animate-step-in: step-in 2s cubic-bezier(0.22, 1, 0.36, 1);
-
 }
 
 @keyframes status-pulse {
@@ -225,38 +224,27 @@
   animation: shimmer 1.5s infinite;
 }
 
-/* view transition */
+/* Page and Modal animation   */
+/* Add these to your theme */
+/* @theme {
+  --animate-page-enter: page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  --animate-modal-enter: modal-enter 0.25s cubic-bezier(0.22, 1, 0.36, 1)
+    forwards;
+} */
 
-::view-transition-old(client-route),
-::view-transition-old(auth-route),
-::view-transition-old(admin-route),
-::view-transition-new(client-route),
-::view-transition-new(auth-route),
-::view-transition-new(admin-route),
-::view-transition-new(user-route),
-::view-transition-old(user-route) {
-  animation-duration: 420ms;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  animation-fill-mode: both;
-  mix-blend-mode: normal;
+/* Replace the @theme block with these standard classes */
+.animate-page-enter {
+  animation: page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-::view-transition-new(client-route),
-::view-transition-new(auth-route),
-::view-transition-new(admin-route) {
-  animation-name: route-slide-in;
+.animate-modal-enter {
+  animation: modal-enter 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-::view-transition-old(client-route),
-::view-transition-old(auth-route),
-::view-transition-old(admin-route) {
-  animation-name: route-slide-out;
-}
-
-@keyframes route-slide-in {
+@keyframes page-enter {
   from {
     opacity: 0;
-    transform: translateX(-32px);
+    transform: translateX(-16px);
   }
   to {
     opacity: 1;
@@ -264,45 +252,7 @@
   }
 }
 
-@keyframes route-slide-out {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(32px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(client-route),
-  ::view-transition-old(auth-route),
-  ::view-transition-old(admin-route),
-  ::view-transition-new(client-route),
-  ::view-transition-new(auth-route),
-  ::view-transition-new(admin-route) {
-    animation-duration: 1ms;
-  }
-}
-
-::view-transition-old(auth-modal),
-::view-transition-new(auth-modal) {
-  animation-duration: 220ms;
-  animation-fill-mode: both;
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  mix-blend-mode: normal;
-}
-
-::view-transition-new(auth-modal) {
-  animation-name: auth-modal-in;
-}
-
-::view-transition-old(auth-modal) {
-  animation-name: auth-modal-out;
-}
-
-@keyframes auth-modal-in {
+@keyframes modal-enter {
   from {
     opacity: 0;
     transform: translateY(12px) scale(0.98);
@@ -310,59 +260,5 @@
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes auth-modal-out {
-  from {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(8px) scale(0.98);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(auth-modal),
-  ::view-transition-new(auth-modal) {
-    animation-duration: 1ms;
-  }
-}
-
-::view-transition-old(user-route),
-::view-transition-new(user-route) {
-  mix-blend-mode: normal;
-  animation-duration: 260ms;
-  animation-fill-mode: both;
-  animation-timing-function: ease;
-}
-
-::view-transition-new(user-route) {
-  animation-name: user-content-enter;
-}
-
-::view-transition-old(user-route) {
-  animation-name: user-content-exit;
-}
-
-@keyframes user-content-enter {
-  from {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes user-content-exit {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
   }
 }

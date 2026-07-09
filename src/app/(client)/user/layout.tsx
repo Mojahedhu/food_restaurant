@@ -1,9 +1,8 @@
-import React, { ViewTransition } from "react";
-import UserBreadcrumb from "../../../features/user/components/userBreadcrumb";
-import UserNav from "../../../features/user/components/userNav";
+import UserBreadcrumb from "@/features/user/components/userBreadcrumb";
+import UserNav from "@/features/user/components/userNav";
 
-import UserNavButton from "../../../features/user/components/userNavButton";
-import UserSignOutButton from "../../../features/user/components/userSignOutButton";
+import UserNavButton from "@/features/user/components/userNavButton";
+import UserSignOutButton from "@/features/user/components/userSignOutButton";
 
 const UserLayout = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -18,7 +17,7 @@ const UserLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       </div>
-      <ViewTransition name="user-route">{children}</ViewTransition>
+      {children}
     </div>
   );
 };

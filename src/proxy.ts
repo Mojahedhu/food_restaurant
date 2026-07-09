@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../auth";
+import { auth } from "@/../auth";
 export default async function proxy(req: NextRequest) {
   const session = await auth();
   const { nextUrl } = req;
-  const url = new URL(req.url);
+  const path = nextUrl.pathname;
   const res = NextResponse.next();
 
   const isLoggedIn = !!session;
@@ -17,12 +17,10 @@ export default async function proxy(req: NextRequest) {
     "/admin",
     "/checkout",
   ];
-  const isProtectedPath = protectedPaths.some((path) =>
-    nextUrl.pathname.startsWith(path),
-  );
+  const isProtectedPath = protectedPaths.some((p) => path.startsWith(p));
 
-  const isAdminPath = nextUrl.pathname.startsWith("/admin");
-  const isAuthPath = nextUrl.pathname.startsWith("/auth");
+  const isAdminPath = path.startsWith("/admin");
+  const isAuthPath = path.startsWith("/auth");
 
   // 💹 0. Redirect logged-in users away from auth pages.
   // This also protects intercepted auth modal navigation,
@@ -35,10 +33,7 @@ export default async function proxy(req: NextRequest) {
   // Redirect to signin page if accessing protected path without authentication
   if (isProtectedPath && !isLoggedIn && !isAuthPath) {
     const redirectUrl = new URL("/auth/signin", nextUrl.origin);
-    redirectUrl.searchParams.set(
-      "callbackUrl",
-      nextUrl.pathname + nextUrl.search,
-    );
+    redirectUrl.searchParams.set("callbackUrl", path + nextUrl.search);
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -50,7 +45,7 @@ export default async function proxy(req: NextRequest) {
 
   // ✅ 3. Checkout guard
   // To check if the use has permission to access checkout and checkout
-  if (url.pathname.startsWith("/checkout")) {
+  if (path.startsWith("/checkout/") || path === "/checkout") {
     const hasIntent = req.cookies.get("checkoutIntent")?.value === "cart";
 
     if (!hasIntent) {

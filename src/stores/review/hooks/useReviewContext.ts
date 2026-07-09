@@ -1,11 +1,7 @@
 import { useContext, useMemo } from "react";
-import { ReviewDisplayState } from "../../../../types/sanityTypes";
-import {
-  selectReviewView,
-  reviewDisplayState,
-  selectReviewList,
-} from "../selector";
-import { ReviewsStoreContext } from "@/providers/review/reviewProvider";
+import { ReviewDisplayState, ReviewView } from "../../../../types/sanityTypes";
+import { selectReviewList, getReviewDisplayState } from "../selector";
+import { ReviewStateContext } from "../reviewProvider";
 
 /**
  * =========================================================
@@ -19,26 +15,6 @@ import { ReviewsStoreContext } from "@/providers/review/reviewProvider";
  * =========================================================
  */
 
-export function useReviewStore() {
-  const context = useContext(ReviewsStoreContext);
-
-  if (!context) {
-    throw new Error("useReviewStore must be used within ReviewsProvider");
-  }
-
-  return context;
-}
-
-/**
- * =========================================================
- * Dispatch Access
- * =========================================================
- */
-
-export function useReviewDispatch() {
-  return useReviewStore().dispatch;
-}
-
 /**
  * =========================================================
  * Raw State Access
@@ -46,7 +22,10 @@ export function useReviewDispatch() {
  */
 
 export function useReviewState() {
-  return useReviewStore().state;
+  const state = useContext(ReviewStateContext);
+  if (!state)
+    throw new Error("useReviewState must be used within ReviewsProvider");
+  return state;
 }
 
 /**
@@ -56,11 +35,16 @@ export function useReviewState() {
  */
 
 export function useReview(reviewId: string): ReviewDisplayState | undefined {
-  const { state } = useReviewStore();
+  const state = useReviewState();
+
+  // 1. Narrowed Dependency: Extract only the specific slice for this review.
+  const reviewSlice = reviewId ? state?.reviews?.[reviewId] : undefined;
 
   return useMemo(() => {
-    return reviewDisplayState(state, reviewId);
-  }, [state, reviewId]);
+    // 2. Pure Calculation: Only recompute the display projection if this specific review's slice changes.
+    // This stabilizes the object reference, unlocking React.memo performance downstream!
+    return getReviewDisplayState(reviewSlice);
+  }, [reviewSlice]);
 }
 
 /**
@@ -69,8 +53,8 @@ export function useReview(reviewId: string): ReviewDisplayState | undefined {
  * =========================================================
  */
 
-export function useReviewList() {
-  const { state } = useReviewStore();
+export function useReviewList(): ReviewDisplayState[] {
+  const state = useReviewState();
 
   return useMemo(() => {
     return selectReviewList(state);
@@ -84,10 +68,10 @@ export function useReviewList() {
  * =========================================================
  */
 
-export function useReviewView(reviewId: string) {
-  const { state } = useReviewStore();
+export function useReviewView(reviewId?: string): ReviewView | undefined {
+  const state = useReviewState();
 
-  return useMemo(() => {
-    return selectReviewView(state, reviewId);
-  }, [state, reviewId]);
+  // 3. Removed Redundant Memoization: Simple property lookups do not benefit from useMemo.
+
+  return reviewId ? state?.reviews?.[reviewId] : undefined;
 }

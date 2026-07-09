@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import PaymentLoadingModal from "@/features/checkout/components/paymentLoadingModal";
 import { delay } from "@/lib/utils";
-import { useCartStore } from "@/stores/cartStore";
+import { useCartStore } from "@/stores/cart/cartStore";
 
 interface CheckoutClientPageProps {
   addressId: string;

@@ -1,9 +1,7 @@
 import { Separator } from "@/components/ui/separator";
-import {
-  FoodDetailsSkeleton,
-  FoodReviewSkeleton,
-  RelatedFoodSkeleton,
-} from "./_components/skeleton";
+import { FoodDetailsSkeleton } from "./_components/skeletons/food-details-skeleton";
+import { ReviewSkeleton } from "./_components/skeletons/reviews-skeleton";
+import { RelatedFoodSkeleton } from "./_components/skeletons/related-foods-skeleton";
 
 const loading = () => {
   return (
@@ -24,7 +22,7 @@ const loading = () => {
           <FoodDetailsSkeleton />
           <div className="space-y-12">
             <Separator />
-            <FoodReviewSkeleton />
+            <ReviewSkeleton />
             <Separator />
             <RelatedFoodSkeleton />
           </div>

@@ -1,14 +1,15 @@
 "use client";
 
-import { ReviewsProvider } from "@/providers/review/reviewProvider";
-import { ReviewView } from "../../../../../../types/sanityTypes";
+import { ReviewsProvider } from "@/stores/review/reviewProvider";
+import { ReviewView } from "@/../types/sanityTypes";
 import { ReviewRealtimeBoundary } from "@/components/common/reviewRealtimeBoundary";
 
 interface ReviewClientProviderProps {
   children: React.ReactNode;
   initialReviews: ReviewView[];
-  foodId: string;
+  foodId?: string;
   userId?: string;
+  foodName?: string;
 }
 
 const ReviewClientProvider = ({
@@ -19,7 +20,11 @@ const ReviewClientProvider = ({
 }: ReviewClientProviderProps) => {
   return (
     <ReviewsProvider initialReviews={initialReviews}>
-      <ReviewRealtimeBoundary foodId={foodId} userId={userId!}>
+      {/*
+        The boundary mounts ONLY after initialReviews are fully hydrated
+        into the Zustand/Context store.
+      */}
+      <ReviewRealtimeBoundary foodId={foodId} userId={userId}>
         {children}
       </ReviewRealtimeBoundary>
     </ReviewsProvider>

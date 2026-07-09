@@ -20,8 +20,8 @@ import Image from "next/image";
 import OpeningSchedule from "./_components/openingSchedule";
 
 import RestaurantPageSkeleton from "./loading";
-import { ViewTransition } from "react";
 import { isRestaurantOpen } from "@/lib/utils/schedule";
+import { RouteTransition } from "@/components/common/route-transition";
 
 async function RestaurantDetailsPage({
   params,
@@ -39,7 +39,7 @@ async function RestaurantDetailsPage({
   console.log("isOpen", isOpen);
 
   return (
-    <ViewTransition name="restaurant-details-route">
+    <RouteTransition>
       <div className="min-h-screen bg-muted/10 pb-20">
         <div className="relative h-[400px] w-full">
           {restaurantDetails?.image && (
@@ -119,8 +119,14 @@ async function RestaurantDetailsPage({
 
                   <TabsContent value="all">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {restaurantDetails?.foodItems.map((food) => (
-                        <FoodCards food={food} key={food._id} />
+                      {restaurantDetails?.foodItems.map((food, index) => (
+                        <div
+                          key={food._id}
+                          className="animate-in fade-in zoom-in-95 fill-mode-both duration-500 ease-out"
+                          style={{ animationDelay: `${index * 50}ms` }}
+                        >
+                          <FoodCards food={food} key={food._id} />
+                        </div>
                       ))}
                     </div>
                   </TabsContent>
@@ -231,7 +237,7 @@ async function RestaurantDetailsPage({
           </div>
         </div>
       </div>
-    </ViewTransition>
+    </RouteTransition>
   );
 }
 

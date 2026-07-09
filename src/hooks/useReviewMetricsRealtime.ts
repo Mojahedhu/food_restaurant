@@ -1,5 +1,5 @@
 import { client } from "@/sanity/lib/client";
-import { useReviewDispatch } from "@/stores/review/hooks/useReviewsState";
+import { useReviewActions } from "@/stores/review/useReviewSelectors";
 import { useEffect } from "react";
 
 const METRICS_REALTIME_QUERY = `*[
@@ -11,8 +11,8 @@ const METRICS_REALTIME_QUERY = `*[
   dislikesCount
 }`;
 
-export function useReviewMetricsRealtime({ foodId }: { foodId: string }) {
-  const dispatch = useReviewDispatch();
+export function useReviewMetricsRealtime({ foodId }: { foodId?: string }) {
+  const actions = useReviewActions();
 
   useEffect(() => {
     if (!foodId) {
@@ -28,37 +28,29 @@ export function useReviewMetricsRealtime({ foodId }: { foodId: string }) {
           visibility: "query",
         },
       )
-      .subscribe((event) => {
-        if (!("transition" in event)) {
-          return;
-        }
+      .subscribe({
+        next: (event) => {
+          if (!("transition" in event) || event.transition === "disappear") {
+            return;
+          }
 
-        if (event.transition === "disappear") {
-          return;
-        }
+          const result = event.result;
+          if (!result) return;
 
-        const result = event.result;
+          const reviewId = result.review?._ref;
+          if (!reviewId) return;
 
-        if (!result) {
-          return;
-        }
-
-        const reviewId = result.review?._ref;
-
-        if (!reviewId) {
-          return;
-        }
-
-        dispatch({
-          type: "metrics_projection_received",
-          payload: {
+          actions.metricsProjectionReceived(
             reviewId,
-            likesCount: result.likesCount ?? 0,
-            dislikesCount: result.dislikesCount ?? 0,
-          },
-        });
+            result.likesCount ?? 0,
+            result.dislikesCount ?? 0,
+          );
+        },
+        error: (error) => {
+          console.error("Sanity Metrics Listener Error:", error);
+        },
       });
 
     return () => subscription.unsubscribe();
-  }, [foodId, dispatch]);
+  }, [foodId, actions]);
 }

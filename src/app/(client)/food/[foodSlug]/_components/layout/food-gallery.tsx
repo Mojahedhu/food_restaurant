@@ -7,9 +7,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { StarRating } from "@/components/foods/starRating";
 import { Flame } from "lucide-react";
-import { FoodWithDetails } from "../../../../../../types/sanityTypes";
+import { FoodWithDetails } from "@/../types/sanityTypes";
 import { useState } from "react";
-import FoodImageModal from "./foodImageModal";
+import FoodImageModal from "./food-image-modal";
 
 interface FoodGalleryProps {
   foodDetails: FoodWithDetails;
@@ -17,6 +17,15 @@ interface FoodGalleryProps {
 const FoodGallery = ({ foodDetails }: FoodGalleryProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+
+  if (!foodDetails.images || foodDetails.images.length === 0) {
+    return (
+      <div className="aspect-square w-full rounded-2xl bg-muted flex items-center justify-center">
+        <span className="text-muted-foreground">No image available</span>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="space-y-4">

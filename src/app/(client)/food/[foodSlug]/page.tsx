@@ -1,47 +1,37 @@
 import { Suspense } from "react";
-import FoodDetails from "./_components/foodDetails";
-import RelatedFood from "./_components/relatedFood";
-import {
-  FoodDetailsSkeleton,
-  RelatedFoodSkeleton,
-} from "./_components/skeleton";
-import {
-  getMyReviewReactions,
-  getReviewMetrics,
-  getReviewsByFoodId,
-  mergeReviewFeed,
-} from "@/lib/data/review";
-
-import FoodReviewSkeleton from "./_components/foodReviewSkeleton";
-import auth from "../../../../../auth";
+import FoodDetails from "./_components/layout/food-details";
+import RelatedFood from "./_components/related/related-foods";
+import { ReviewSkeleton } from "./_components/skeletons/reviews-skeleton";
 import { getFoodBySlug } from "@/lib/data/food";
 import { Metadata } from "next";
-
 import { urlFor } from "@/sanity/lib/image";
-
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import { SanityImageSource } from "@sanity/image-url";
 import { Separator } from "@/components/ui/separator";
-import ReviewClientProvider from "./_components/reviewClientProvider";
-import ReviewSection from "./_components/reviewSection";
+import ReviewSection from "./_components/reviews/review-section";
+import { FoodDetailsSkeleton } from "./_components/skeletons/food-details-skeleton";
+import { RelatedFoodSkeleton } from "./_components/skeletons/related-foods-skeleton";
+import { notFound } from "next/navigation";
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ foodSlug: string }>;
+  params: { foodSlug: string };
 }): Promise<Metadata> {
-  const { foodSlug: slug } = await params;
-  const food = await getFoodBySlug(slug);
+  const { foodSlug } = await params;
+  const food = await getFoodBySlug(foodSlug); // Cached automatically!
+
+  if (!food) {
+    return notFound();
+  }
   return {
-    title: food?.name,
-    description: food?.description,
+    title: `${food.name} | Your App`,
+    description: food.description,
     openGraph: {
-      title: food?.name,
-      description: food?.description,
+      title: food.name,
       images: [
         {
-          url:
-            urlFor(food?.images?.[0]?.asset as SanityImageSource)?.url() || "",
+          url: urlFor(food?.images?.[0] as SanityImageSource).url(),
           width: 800,
           height: 600,
         },
@@ -59,34 +49,15 @@ const FoodPage = async ({ params }: FoodPageProps) => {
 
   /**
    * ==========================================
-   * Session
-   * ==========================================
-   */
-
-  const session = await auth();
-  const userId = session?.user?.id;
-
-  /**
-   * ==========================================
    * Food lookup
    * ==========================================
    */
 
   const foodDetails = await getFoodBySlug(foodSlug);
 
-  /**
-   * ==========================================
-   * Review projection bootstrap
-   * ==========================================
-   */
-
-  const reviews = await getReviewsByFoodId(foodDetails._id, userId);
-
-  const metrics = await getReviewMetrics(foodDetails._id);
-
-  const reactions = await getMyReviewReactions(foodDetails._id);
-
-  const initialReviewsFeed = mergeReviewFeed({ reviews, metrics, reactions });
+  if (!foodDetails) {
+    return notFound();
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -111,15 +82,11 @@ const FoodPage = async ({ params }: FoodPageProps) => {
           </Suspense>
           <Separator className="mb-12" />
 
-          <Suspense fallback={<FoodReviewSkeleton />}>
-            <ReviewClientProvider
-              initialReviews={initialReviewsFeed}
+          <Suspense fallback={<ReviewSkeleton />}>
+            <ReviewSection
               foodId={foodDetails._id}
-              userId={userId ?? ""}
-            >
-              {/* <FoodReview foodId={foodDetails._id} userId={userId ?? ""} /> */}
-              <ReviewSection foodId={foodDetails._id} userId={userId ?? ""} />
-            </ReviewClientProvider>
+              foodName={foodDetails.name}
+            />
           </Suspense>
 
           <Separator className="mb-12" />

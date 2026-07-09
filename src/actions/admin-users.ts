@@ -57,7 +57,7 @@ export async function fetchAdminUsersPaged({
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
 
-    let filterClauses = `_type == "user" && !isDeleted`;
+    let filterClauses = `_type == "user" && coalesce(isDeleted, false) == false`;
     const params: Record<string, string | number> = { start, end };
 
     if (search.trim()) {

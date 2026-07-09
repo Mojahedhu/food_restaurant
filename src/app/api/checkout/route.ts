@@ -1,5 +1,5 @@
 import { client as adminClient } from "@/sanity/lib/client";
-import { CartItem } from "../../../stores/cartStore";
+import { CartItem } from "../../../stores/cart/cartStore";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { nanoid } from "zod/mini";

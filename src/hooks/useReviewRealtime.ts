@@ -5,13 +5,14 @@
  */
 
 import { client } from "@/sanity/lib/client";
-import { useReviewDispatch } from "@/stores/review/hooks/useReviewsState";
+
 import { useEffect } from "react";
 import { ReviewStatic } from "../../types/sanityTypes";
 import { UserImage } from "../../sanity.types";
+import { useReviewActions } from "@/stores/review/useReviewSelectors";
 
 interface useReviewRealtimeOptions {
-  foodId: string;
+  foodId?: string;
 }
 
 const REVIEW_PROJECTION_QUERY = `*[
@@ -19,20 +20,9 @@ const REVIEW_PROJECTION_QUERY = `*[
   && food._ref == $foodId
   && approved == true
 ]{
-  _id,
-  _type,
-  _rev,
-  _createdAt,
-  _updatedAt,
-
-  rating,
-  comment,
-  approved,
-
-  food,
-
+  _id, _type, _rev, _createdAt, _updatedAt,
+  rating, comment, approved, food,
   "foodName": food->name,
-
   "user": user->{
     _id,
     name,
@@ -42,12 +32,15 @@ const REVIEW_PROJECTION_QUERY = `*[
 `;
 
 export function useReviewRealtime({ foodId }: useReviewRealtimeOptions) {
-  const dispatch = useReviewDispatch();
+  const action = useReviewActions();
 
   useEffect(() => {
     if (!foodId) {
       return;
     }
+
+    let isMounted = true;
+    const abortController = new AbortController();
 
     /**
      * =====================================================
@@ -65,66 +58,61 @@ export function useReviewRealtime({ foodId }: useReviewRealtimeOptions) {
           visibility: "query",
         },
       )
-      .subscribe(async (event) => {
-        /**
-         * =================================================
-         * Deletion: review removed
-         * =================================================
-         */
+      .subscribe({
+        next: async (event) => {
+          /**
+           * =================================================
+           * Deletion: review removed
+           * =================================================
+           */
 
-        if (!("transition" in event)) {
-          return;
-        }
+          if (!("transition" in event)) {
+            return;
+          }
 
-        const transition = event.transition;
+          const transition = event.transition;
 
-        if (transition === "disappear") {
-          dispatch({
-            type: "review_projection_removed",
-            payload: {
-              reviewId: event.documentId,
+          // Handle Deletion
+          if (transition === "disappear") {
+            if (isMounted) {
+              action.reviewProjectionRemoved(event.documentId);
+            }
+            return;
+          }
 
-              /**
-               * fallback
-               */
-            },
-          });
-          return;
-        }
+          /**
+           * =================================================
+           * Ignore malformed packets
+           * =================================================
+           */
 
-        /**
-         * =================================================
-         * Ignore malformed packets
-         * =================================================
-         */
+          const result = event.result;
+          if (!result) {
+            return;
+          }
+          try {
+            // ASYNC FETCH: We must protect against unmounts here!
+            const normalizedResult = await client.fetch<{
+              user: { _id: string; name: string; image: UserImage };
+              foodName: string;
+            }>(
+              `*[_id == $docID][0]{ "user": user->{ _id, name, image }, "foodName": food->name }`,
+              {
+                docID: result?._id,
+              },
+              { signal: abortController.signal }, // Can be aborted if unmounted
+            );
 
-        const result = event.result;
-        const normalizedResult = await client.fetch<{
-          user: { _id: string; name: string; image: UserImage };
-          foodName: string;
-        }>(
-          `*[_id == $docID][0]{ "user": user->{ _id, name, image }, "foodName": food->name }`,
-          {
-            docID: result?._id,
-          },
-        );
+            // MEMORY LEAK PREVENTION: Do not dispatch if component unmounted while fetching
+            if (!isMounted) return;
 
-        if (!result) {
-          return;
-        }
-        console.log("result", result);
-        console.log("normalizedResult", normalizedResult);
+            /**
+             * =================================================
+             * Normalize server projection
+             * =================================================
+             */
 
-        /**
-         * =================================================
-         * Normalize server projection
-         * =================================================
-         */
-
-        dispatch({
-          type: "review_projection_received",
-          payload: {
-            review: {
+            action.reviewProjectionReceived({
               _id: result._id,
 
               _type: "review",
@@ -146,9 +134,21 @@ export function useReviewRealtime({ foodId }: useReviewRealtimeOptions) {
               _updatedAt: result._updatedAt,
 
               _rev: result._rev,
-            },
-          },
-        });
+            });
+          } catch (err: unknown) {
+            // Ignore abort errors natively triggered by cleanup
+            if (err instanceof Error && err.name === "AbortError") {
+              console.log(
+                "Realtime review fetch aborted (component unmounted)",
+              );
+            } else {
+              console.error("Failed to normalize review projection:", err);
+            }
+          }
+        },
+        error: (err) => {
+          console.error("Sanity Review Realtime Listener Error:", err);
+        },
       });
 
     /**
@@ -157,8 +157,11 @@ export function useReviewRealtime({ foodId }: useReviewRealtimeOptions) {
      * =================================================
      */
 
+    // RIGOROUS TEARDOWN
     return () => {
+      isMounted = false;
+      abortController.abort();
       subscribe.unsubscribe();
     };
-  }, [foodId, dispatch]);
+  }, [foodId, action]);
 }

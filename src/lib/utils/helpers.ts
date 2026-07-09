@@ -143,12 +143,14 @@ export function isMutationReconciled(
   }
 
   /**
-   * If reaction already matches,
-   * metrics should already represent that state.
-   *
-   * No need to calculate deltas anymore.
+   * Wait for the metrics to catch up too before pruning!
+   * This prevents the UI from flashing old counts.
    */
-  return true;
+  return optimisticMetricsSatisfied(
+    view.metrics,
+    view.confirmedReaction,
+    mutation.optimisticReaction,
+  );
 }
 
 /**

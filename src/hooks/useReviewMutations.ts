@@ -1,10 +1,12 @@
 import { useState } from "react";
-import {
-  upsertReview,
-  deleteReview,
-} from "@/app/(client)/food/[foodSlug]/actions/review";
+
 import { ReviewView } from "../../types/sanityTypes";
-import { useReviewDispatch } from "@/stores/review/hooks/useReviewsState";
+
+import {
+  deleteReviewAction,
+  upsertReviewAction,
+} from "@/actions/client-reviews";
+import { useReviewActions } from "@/stores/review/useReviewSelectors";
 
 export interface CreateInput {
   foodId: string;
@@ -28,25 +30,27 @@ export interface DeleteInput {
 export type ReviewResult =
   | {
       success: boolean;
-      message: string;
       error: string;
       transactionId?: undefined;
     }
   | {
       success: boolean;
-      message: string;
+      transactionId: string;
       error?: undefined;
-      transactionId?: undefined;
+    };
+
+export type ReviewDeleteResult =
+  | {
+      success: boolean;
+      error: string;
     }
   | {
       success: boolean;
-      transactionId: string;
-      message?: undefined;
       error?: undefined;
     };
 
 export function useReviewMutations() {
-  const dispatch = useReviewDispatch();
+  const actions = useReviewActions();
   const [isPending, setIsPending] = useState(false);
 
   /**
@@ -70,15 +74,10 @@ export function useReviewMutations() {
      */
     setIsPending(true);
     const transactionId = crypto.randomUUID();
-    dispatch({
-      type: "review_create_optimistic",
-      payload: {
-        review: optimisticReview,
-        operationId: transactionId,
-      },
-    });
+    actions.reviewCreateOptimistic(optimisticReview, transactionId);
     try {
-      return await upsertReview({
+      // Calls the new Server Action safely via Zod payload
+      return await upsertReviewAction({
         foodId,
         rating,
         comment,
@@ -93,12 +92,7 @@ export function useReviewMutations() {
        * Optional rollback can be added.
        */
 
-      dispatch({
-        type: "review_operation_field",
-        payload: {
-          reviewId: optimisticReview.review._id,
-        },
-      });
+      actions.reviewOperationField(optimisticReview.review._id);
       throw error;
     } finally {
       setIsPending(false);
@@ -126,18 +120,11 @@ export function useReviewMutations() {
 
     const transactionId = crypto.randomUUID();
     setIsPending(true);
-    dispatch({
-      type: "review_update_optimistic",
-      payload: {
-        reviewId,
-        rating,
-        comment,
-        operationId: transactionId,
-      },
-    });
+    actions.reviewUpdateOptimistic(reviewId, rating, comment, transactionId);
 
     try {
-      return await upsertReview({
+      // Calls the new Server Action safely via Zod payload
+      return await upsertReviewAction({
         foodId,
         rating,
         comment,
@@ -147,12 +134,7 @@ export function useReviewMutations() {
     } catch (error) {
       console.log(error);
 
-      dispatch({
-        type: "review_operation_field",
-        payload: {
-          reviewId,
-        },
-      });
+      actions.reviewOperationField(reviewId);
       throw error;
     } finally {
       setIsPending(false);
@@ -169,16 +151,11 @@ export function useReviewMutations() {
      * Optimistic delete first
      */
     const transactionId = crypto.randomUUID();
-    dispatch({
-      type: "review_delete_optimistic",
-      payload: {
-        reviewId,
-        operationId: transactionId,
-      },
-    });
+    actions.reviewDeleteOptimistic(reviewId, transactionId);
 
     try {
-      return await deleteReview({
+      // Calls the new Server Action safely via Zod payload
+      return await deleteReviewAction({
         foodId,
       });
     } catch (error) {
@@ -187,12 +164,7 @@ export function useReviewMutations() {
       /**
        * Optional rollback later
        */
-      dispatch({
-        type: "review_operation_field",
-        payload: {
-          reviewId,
-        },
-      });
+      actions.reviewOperationField(reviewId);
       throw error;
     } finally {
       setIsPending(false);

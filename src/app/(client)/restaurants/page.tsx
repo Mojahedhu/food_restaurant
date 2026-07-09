@@ -29,8 +29,14 @@ async function RestaurantPage() {
         </p>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {restaurants.map((restaurant: Restaurant) => (
-          <RestaurantCard restaurant={restaurant} key={restaurant._id} />
+        {restaurants.map((restaurant: Restaurant, index: number) => (
+          <div
+            key={restaurant._id}
+            className="animate-in fade-in zoom-in-95 fill-mode-both duration-500 ease-out"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <RestaurantCard restaurant={restaurant} />
+          </div>
         ))}
       </div>
     </div>

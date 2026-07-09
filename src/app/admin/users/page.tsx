@@ -43,6 +43,7 @@ export default async function AdminUsersPage({ searchParams }: UsersPageProps) {
     }),
     fetchAllUserRoles(),
   ]);
+  console.log("user", users);
 
   return (
     <div className="flex flex-col gap-6">

@@ -16,9 +16,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         {/* Scrollable Page Content with Smart Animation */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 transition-colors duration-200">
-          <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500 ease-in-out">
-            {children}
-          </div>
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
     </div>

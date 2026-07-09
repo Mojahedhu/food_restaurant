@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import { useCartStore } from "../../stores/cartStore";
+import { useCartStore } from "../../stores/cart/cartStore";
 import {
   Minus,
   Package,

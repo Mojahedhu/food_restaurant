@@ -1,7 +1,6 @@
 import { getReviewIdFromReactionId } from "@/lib/utils/helpers";
 import { client } from "@/sanity/lib/client";
-
-import { useReviewDispatch } from "@/stores/review/hooks/useReviewsState";
+import { useReviewActions } from "@/stores/review/useReviewSelectors";
 import { useEffect } from "react";
 
 /**
@@ -11,9 +10,9 @@ import { useEffect } from "react";
  */
 
 interface useReactionRealtimeOptions {
-  foodId: string;
+  foodId?: string;
 
-  userId: string;
+  userId?: string;
 }
 
 const BASE_REACTION_REALTIME_QUERY = `*[
@@ -22,23 +21,11 @@ const BASE_REACTION_REALTIME_QUERY = `*[
   && user._ref == $userId
 ]`;
 
-const REACTION_REALTIME_QUERY = `*[
-    _type == "reviewReaction"
-    && food._ref == $foodId
-    && user._ref == $userId
-  ]{
-    mutationId,
-    review,
-    food,
-    user,
-    type  
-  }`;
-
 export function useReactionRealtime({
   foodId,
   userId,
 }: useReactionRealtimeOptions) {
-  const dispatch = useReviewDispatch();
+  const actions = useReviewActions();
 
   useEffect(() => {
     if (!userId || !foodId) {
@@ -76,19 +63,14 @@ export function useReactionRealtime({
             return;
           }
 
+          // Handle reaction removal
           if (event.transition === "disappear") {
             /**
              * reaction.reviewId.userId
              */
             const reviewId = getReviewIdFromReactionId(event.documentId!);
 
-            dispatch({
-              type: "reaction_projection_received",
-              payload: {
-                reviewId,
-                reaction: null,
-              },
-            });
+            actions.reactionProjectionReceived(reviewId, null);
             return;
           }
 
@@ -106,30 +88,22 @@ export function useReactionRealtime({
 
           const reviewId =
             result.review._ref ?? getReviewIdFromReactionId(event.documentId!);
-
           if (!reviewId) {
             return;
           }
 
-          dispatch({
-            type: "reaction_projection_received",
-            payload: {
-              reviewId,
-              reaction: result.type,
-              mutationId: result.mutationId,
-            },
-          });
+          actions.reactionProjectionReceived(reviewId, result.type);
         },
         error(error) {
-          console.error("reaction listener error", error);
+          console.error("Sanity Reaction Listener Error:", error);
         },
         complete() {
-          console.log("listener complete");
+          console.log("Sanity Reaction Listener complete");
         },
       });
 
     return () => {
       subscribe.unsubscribe();
     };
-  }, [foodId, userId, dispatch]);
+  }, [foodId, userId, actions]);
 }

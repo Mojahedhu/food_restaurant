@@ -59,8 +59,15 @@ You must follow these strict guidelines for every single code generation task in
   - **UI/Presentation:** Keep JSX/TSX lean; delegate all complex state, side effects, and event handlers to dedicated **Custom Hooks** (e.g., `useTaskManager`). _Boilerplate Guard:_ Progressive abstraction is preferred. For simple UI components (under 50 lines with basic local toggles), keeping state inline is allowed. Abstract into a custom hook only when the component handles asynchronous fetches, side-effects, or complex business logic.
   - **Data Layer & Utils:** Isolate API fetching, data mutations, and heavy business logic into separate service modules, server actions, or utility files.
   - **Type Definitions:** Extract TypeScript interfaces and types into localized or global `.types.ts` files rather than inlining them.
+  - **Helper Function Classification:** Classify and separate helpers based on side-effects:
+    - **Pure Helper Functions (Calculations, Formatting):** Place in `src/lib/utils/` (e.g., `src/lib/utils/review-helpers.ts` for feature-specific or `helpers.ts` for global). They must have zero side-effects and be easily unit-tested.
+    - **Outer Effect Helpers (Reads/API Queries):** Place in `src/lib/data/` (e.g., `src/lib/data/review.ts` for GROQ read fetches).
+    - **Outer Effect Write Actions (Mutations/Transactions):** Place in `src/actions/` (e.g., `src/actions/client-reviews.ts` for Server Actions).
   - **Maximized Reusability:** Break down large component trees into highly atomized, pure, and reusable UI components. If a logic block or utility function is used more than once (or exceeds 20 lines), abstract it.
   - **Do not put everything in one file:** create clean code and well-organized files structure. keep files small and focused on a single responsibility.split large components into smaller, reusable components. Keep components small, focused, and easy to reason about. Avoid deep nesting and unnecessary abstractions.
+  - **Prop Drilling Elimination (The Next.js Way):** Absolutely minimize passing state setters, modal visibility flags, and mutation functions down the component tree (prop drilling).
+    - **URL-Driven UI State:** For shared UI states (like opening an edit modal), avoid using `useState` in a parent component. Instead, push parameters to the URL (e.g., `?editReview=123`). Modals and components should independently read the URL search parameters to derive their visibility, preserving browser history and refresh-resilience.
+    - **Self-Sufficient Mutations:** Do not pass mutation functions (like `onDelete`) down from parent lists to children. Child components (or their custom hooks) should independently invoke their own mutation hooks to remain highly cohesive and decoupled.
 
 ## 8. Caching & Data Consistency (Next.js Revalidation)
 

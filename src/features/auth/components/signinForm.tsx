@@ -26,7 +26,6 @@ const SignInForm = ({ variant = "page" }: SignInFormProps) => {
   const registered = searchParams.get("registered");
   const callbackUrl = searchParams.get("callbackUrl");
   const authError = searchParams.get("error");
-  console.log("callbackUrl", callbackUrl);
 
   const getErrorMessage = (errorCode: string | null) => {
     const errorMessages: Record<string, string> = {

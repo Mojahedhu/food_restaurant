@@ -1,6 +1,7 @@
 import { getFoodBySlug } from "@/lib/data/food";
 import { Check } from "lucide-react";
-import FoodGallery from "./foodGallery";
+import FoodGallery from "./food-gallery";
+import { notFound } from "next/navigation";
 
 interface FoodDetailsProps {
   foodSlug: string;
@@ -8,6 +9,9 @@ interface FoodDetailsProps {
 
 const FoodDetails = async ({ foodSlug }: FoodDetailsProps) => {
   const foodDetails = await getFoodBySlug(foodSlug);
+  if (!FoodDetails) {
+    notFound(); // Triggers src/app/(client)/food/[foodSlug]/not-found.tsx
+  }
 
   return (
     <>

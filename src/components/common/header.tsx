@@ -4,7 +4,7 @@ import Container from "./container";
 import Logo from "./logo";
 import { NAV_LINKS } from "@/constants/statics";
 import Link from "next/link";
-import { useCartStore } from "../../stores/cartStore";
+import { useCartStore } from "../../stores/cart/cartStore";
 import { cn } from "@/lib/utils";
 import UserMenu from "./UserMenu";
 import { Menu, Search, ShoppingCart, X } from "lucide-react";

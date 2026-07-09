@@ -1,6 +1,5 @@
 import Header from "@/components/common/header";
 import Footer from "@/components/home/footer";
-import React, { ViewTransition } from "react";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -13,7 +12,7 @@ const ClientLayout = ({ children, authModal }: ClientLayoutProps) => {
       <Header />
 
       {authModal}
-      <ViewTransition name="client-route">{children}</ViewTransition>
+      <main>{children}</main>
       <Footer />
     </div>
   );
