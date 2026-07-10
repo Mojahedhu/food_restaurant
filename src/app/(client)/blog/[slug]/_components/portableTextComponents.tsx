@@ -3,7 +3,7 @@ import { urlFor } from "@/sanity/lib/image";
 import {
   PortableTextImageBlock,
   TwoUpImagesBlock,
-} from "../../../../../../types/sanityTypes";
+} from "@/../types/sanityTypes";
 import { PortableTextComponents } from "next-sanity";
 
 export function createPortableTextComponents(
