@@ -3,71 +3,39 @@ import { Suspense } from "react";
 import { FoodWithDetails } from "../../../../types/sanityTypes";
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import MenuClient from "./menu-client";
+import { getMenuFoods, getMenuTotalCount, SortOption } from "@/lib/data/menu";
 
 export const metadata = {
   title: "Menu - QuickFood",
   description: "Browse our delicious menu and order you favorite dishes",
 };
 
-async function getMenuData() {
-  const foods = await client.fetch<FoodWithDetails[]>(
-    `*[_type == "food" && available == true] 
-    | order(_createdAt desc) 
-    [0...12] {
-          _id,
-          _createdAt,
-          name,
-          "slug": slug.current,
-          description,
-          "basePrice": price,
-          images,
-          preparationTime,
-          spiceLevel,
-          available,
-          featured,
-         "averageRating": coalesce(
-              math::avg(
-                *[
-                  _type == "review" &&
-                  food._ref == ^._id &&
-                  approved == true
-                ].rating
-              ),
-              0
-            ),
-            "totalReviews": count(
-              *[
-                _type == "review" &&
-                food._ref == ^._id &&
-                approved == true
-              ]
-            ),
-            category->{
-              _id,
-              name,
-              "slug": slug.current,
-              description
-            },
-          category->{
-            _id,
-            name,
-            "slug": slug.current,
-            description
-          },
-          varieties[]->{
-            _id,
-            name,
-          }
-        }`,
-  );
-  const count = await client.fetch(
-    `count(*[_type == "food" && available == true])`,
-  );
-
-  return { foods, count };
+interface MenuPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
-const MenuPage = async () => {
-  const { foods, count } = await getMenuData();
+
+export default async function MenuPage(props: MenuPageProps) {
+  // Await searchParams to satisfy Next.js asynchronous requirements
+  const searchParams = await props.searchParams;
+
+  // Rule 7: URL-Driven UI State
+  const sortParam = (searchParams?.sort as string) || "latest";
+
+  const validSorts: SortOption[] = [
+    "latest",
+    "name-asc",
+    "name-desc",
+    "price-low",
+    "price-high",
+  ];
+  const sortBy: SortOption = validSorts.includes(sortParam as SortOption)
+    ? (sortParam as SortOption)
+    : "latest";
+
+  const [foods, count] = await Promise.all([
+    getMenuFoods(0, sortBy),
+    getMenuTotalCount(),
+  ]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,14 +43,18 @@ const MenuPage = async () => {
       <Suspense
         fallback={
           <div className="h-screen flex justify-center">
-            <div className="mt-12">Loading menu...</div>
+            <div className="mt-12 text-muted-foreground animate-pulse">
+              Loading menu...
+            </div>
           </div>
         }
       >
-        <MenuClient initialFoods={foods} totalCount={count} />
+        <MenuClient
+          initialFoods={foods}
+          totalCount={count}
+          initialSort={sortBy}
+        />
       </Suspense>
     </div>
   );
-};
-
-export default MenuPage;
+}

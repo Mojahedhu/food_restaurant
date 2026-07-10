@@ -12,27 +12,34 @@ import {
 import FoodCardSkeleton from "@/components/common/foodCardSkeleton";
 import FoodCards from "@/components/foods/foodCards";
 import { useMenuCatalog } from "@/hooks/useMenuCatalog";
+import { SortOption } from "@/lib/data/menu";
 
 interface MenuClientProps {
   initialFoods: FoodWithDetails[];
   totalCount: number;
+  initialSort: SortOption;
 }
 
 const FOODS_PER_PAGE = 12;
 const MenuClient = ({
   initialFoods,
   totalCount: totalDBCount,
+  initialSort,
 }: MenuClientProps) => {
+  // Rule 7: Pure UI Delegation
   const {
-    page,
     foods,
     totalCount,
     sortBy,
     setSortBy,
-    isLoading,
+    isSortPending,
+    isFetchingNextPage,
     hasMore,
     sentinelRef,
-  } = useMenuCatalog(initialFoods, totalDBCount);
+  } = useMenuCatalog(initialFoods, totalDBCount, initialSort);
+
+  // Rule 4: Total Map Safety Guard
+  const safeFoods = foods || [];
 
   return (
     <>
@@ -49,13 +56,16 @@ const MenuClient = ({
         {/* Header with count and sort */}
         <div className="mb-6 flex items-center justify-between">
           <p className="text-lg font-medium">
-            {isLoading ? (
+            {isSortPending ? (
               <span className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Loading...
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <span className="text-muted-foreground">
+                  Updating catalog...
+                </span>
               </span>
             ) : (
               <span className="text-muted-foreground">
-                {foods.length} of {totalCount}{" "}
+                {safeFoods.length} of {totalCount}{" "}
                 {totalCount === 1 ? "item" : "items"}
               </span>
             )}
@@ -65,7 +75,11 @@ const MenuClient = ({
             <label htmlFor="sort" className="text-sm text-muted-foreground">
               Sort by:
             </label>
-            <Select value={sortBy} onValueChange={setSortBy}>
+            <Select
+              value={sortBy}
+              onValueChange={setSortBy}
+              disabled={isSortPending}
+            >
               <SelectTrigger className="w-50">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -81,37 +95,47 @@ const MenuClient = ({
         </div>
         {/* Menu grid of four columns */}
         <div className="grid grid-cols-1 sm:grid-cols md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {isLoading && page === 0
+          {/* Rule 5: Explicit Loading Skeletons */}
+          {isSortPending
             ? Array.from({ length: FOODS_PER_PAGE }).map((_, index) => (
                 <FoodCardSkeleton key={`skeleton-${index}`} />
               ))
             : foods?.map((food, index) => (
                 <div
                   key={food._id}
+                  // Rule 5: Fluid Component Transitions
                   className="animate-in fade-in zoom-in-95 fill-mode-both duration-500 ease-out"
-                  style={{ animationDelay: `${index * 50}ms` }}
+                  style={{
+                    animationDelay: `${(index % FOODS_PER_PAGE) * 50}ms`,
+                  }}
                 >
                   <FoodCards food={food} />
                 </div>
               ))}
         </div>
         {/* Loading indicator for infinite scroll */}
-        {hasMore && (
+        {/* Rule 5: Infinite Scroll Exception Guard Sentinel */}
+        {hasMore && !isSortPending && (
           <div ref={sentinelRef} className="py-20 text-center">
-            {isLoading && (
-              <div className="flex items-center justify-center gap-2">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                <span className="text-sm text-muted-foreground">
-                  Loading more items...
-                </span>
-              </div>
-            )}
+            <div
+              className={`flex items-center justify-center gap-2 transition-opacity duration-300 ${isFetchingNextPage ? "opacity-100" : "opacity-0"}`}
+            >
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">
+                Loading more items...
+              </span>
+            </div>
           </div>
         )}
         {/* No results */}
-        {!isLoading && foods.length === 0 && (
-          <div className="py-12 text-center">
-            <p className="text-muted-foreground">No items found.</p>
+        {!isSortPending && safeFoods.length === 0 && (
+          <div className="py-20 text-center border border-dashed rounded-lg bg-muted/20">
+            <p className="text-muted-foreground text-lg mb-2">
+              No items found.
+            </p>
+            <p className="text-sm text-muted-foreground/75">
+              Try adjusting your sort filters.
+            </p>
           </div>
         )}
       </Container>

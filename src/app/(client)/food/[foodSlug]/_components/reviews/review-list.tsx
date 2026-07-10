@@ -6,6 +6,7 @@ import {
   useHasHydrated,
   useReviewIds,
 } from "@/stores/review/useReviewSelectors";
+import { useClientInfiniteScroll } from "@/hooks/useClientInfiniteScroll";
 
 interface ReviewListProps {
   userId?: string;
@@ -19,6 +20,11 @@ export function ReviewList({ userId }: ReviewListProps) {
 
   const router = useRouter();
   const pathname = usePathname();
+
+  // Rule 7: Delegate complex state and side-effects to custom hooks
+  const { visibleItems, hasMore, isFetchingNextPage, sentinelRef } =
+    useClientInfiniteScroll(reviewIds, 5);
+
   const handleWriteReview = () => {
     if (!userId) {
       const params = new URLSearchParams({ callbackUrl: pathname });
@@ -77,16 +83,34 @@ export function ReviewList({ userId }: ReviewListProps) {
               </div>
             ) : (
               // 3. Show Reviews
-              reviewIds.map((id) => {
-                return (
-                  // Map over primitive string IDs instead of massive objects
-                  <div key={id}>
-                    {/* Rule 7: Zero prop drilling. Only passing data & auth context */}
-                    {/* Pass ONLY the string ID to the card */}
-                    <ReviewCard id={id} userId={userId} />
+              <>
+                {/* Rule 4: Map Safety with fallback array */}
+                {(visibleItems || []).map((id) => {
+                  return (
+                    // Map over primitive string IDs instead of massive objects
+                    <div
+                      key={id}
+                      // Rule 5: Fluid Route & Component Transitions
+                      className="transition-all duration-500 ease-in-out animate-in fade-in slide-in-from-bottom-4 zoom-in-95"
+                    >
+                      {/* Rule 7: Zero prop drilling. Only passing data & auth context */}
+                      {/* Pass ONLY the string ID to the card */}
+                      <ReviewCard id={id} userId={userId} />
+                    </div>
+                  );
+                })}
+                {/* 4. Intersection Observer Sentinel */}
+                {hasMore && (
+                  <div
+                    ref={sentinelRef}
+                    className="w-full flex justify-center py-8 opacity-75"
+                  >
+                    <Loader2
+                      className={`w-6 h-6 text-muted-foreground/50 transition-all duration-300 ${isFetchingNextPage ? "animate-spin opacity-100" : "opacity-0"}`}
+                    />
                   </div>
-                );
-              })
+                )}
+              </>
             )}
           </div>
         </div>

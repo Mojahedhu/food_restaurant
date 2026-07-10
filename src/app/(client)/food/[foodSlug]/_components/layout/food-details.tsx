@@ -22,7 +22,6 @@ const FoodDetails = async ({ foodSlug }: FoodDetailsProps) => {
         <h2 className="text-2xl font-bold text-foreground mb-6">Ingredients</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {foodDetails.ingredients?.map((ingredient, i) => {
-            console.log(ingredient._id);
             return (
               <div
                 key={ingredient._id + `${i}_set`}
