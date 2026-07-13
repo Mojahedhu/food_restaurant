@@ -1,9 +1,9 @@
 import React from "react";
-import BlogHeroSkeleton from "./_components/blogHeroSkeleton";
-import BlogPostBodySkeleton from "./_components/blogPostBodySkeleton";
-import BlogSearchSkeleton from "./_components/blogSearchSkeleton";
-import BlogNewsletterSkeleton from "./_components/blogNewsSkeleton";
-import BlogLatestPostsSkeleton from "./_components/blogLatestPostsSkeleton";
+import BlogHeroSkeleton from "./_components/skeleton/blogHeroSkeleton";
+import BlogPostBodySkeleton from "./_components/skeleton/blogPostBodySkeleton";
+import BlogSearchSkeleton from "./_components/skeleton/blogSearchSkeleton";
+import BlogNewsletterSkeleton from "./_components/skeleton/blogNewsSkeleton";
+import BlogLatestPostsSkeleton from "./_components/skeleton/blogLatestPostsSkeleton";
 
 function BlogDetailsSkeletonPage() {
   return (

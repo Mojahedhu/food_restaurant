@@ -1,14 +1,19 @@
 import { Breadcrumb } from "@/components/common/breadcrumb";
-import BlogCard from "@/components/featuredPost/blogCard";
-import { getAllPosts } from "@/lib/sanityFunctions";
-import BlogPageSkeleton from "./loading";
+import { fetchBlogPosts } from "@/lib/data/blog";
+import BlogClient from "./blog-client";
 
-async function BlogPage() {
-  const blog = await getAllPosts();
+interface BlogPageProps {
+  searchParams: Promise<{
+    search?: string;
+  }>;
+}
 
-  if (!blog) {
-    return <BlogPageSkeleton />;
-  }
+async function BlogPage(props: BlogPageProps) {
+  const searchParams = await props.searchParams;
+  const search = searchParams.search || "";
+
+  // Outer Effect Read directly from the Server!
+  const { posts, totalCount } = await fetchBlogPosts(1, search);
 
   return (
     <div className="container mx-auto px-4 pb-8">
@@ -23,11 +28,8 @@ async function BlogPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {blog.map((post) => (
-          <BlogCard key={post._id} post={post} />
-        ))}
-      </div>
+      {/* Mount the interactive Client shell */}
+      <BlogClient initialPosts={posts} initialTotal={totalCount} />
     </div>
   );
 }

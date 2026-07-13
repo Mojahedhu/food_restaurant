@@ -2,16 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Plus,
-  Trash2,
-  MapPin,
-  Building,
-  Home,
-  Star,
-  Pencil,
-  Loader,
-} from "lucide-react";
+import { Plus, Trash2, MapPin, Star, Pencil, Loader } from "lucide-react";
 import { useState } from "react";
 import { useAddressStore } from "@/features/address/store/addressStore";
 import { useLiveAddressActions } from "@/hooks/useLiveAddressActions";
@@ -29,29 +20,8 @@ import { useLiveAddress } from "@/hooks/useLiveAddress";
 import CustomAlertDialog from "@/components/common/customAlertDialog";
 import { cn } from "@/lib/utils";
 
-import { Address } from "../../../../../types/sanityTypes";
-
-const IconsPicker = ({ type }: { type: string }) => {
-  if (type === "home") {
-    return (
-      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-800">
-        <Home className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-      </div>
-    );
-  }
-  if (type === "work") {
-    return (
-      <div className="flex items-center justify-center h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/20">
-        <Building className="h-5 w-5 text-orange-600 dark:text-orange-400" />
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center justify-center h-10 w-10 rounded-full bg-gray-800">
-      <MapPin className="h-5 w-5 text-gray-400" />
-    </div>
-  );
-};
+import { Address } from "@/../types/sanityTypes";
+import { IconsPicker } from "@/features/address/components/iconsPicker";
 
 const TableSkeletonLoading = () => {
   return Array.from({ length: 5 }).map((_, i) => (

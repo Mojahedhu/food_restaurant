@@ -28,6 +28,7 @@ const BlogCard = ({
             fill
             sizes="(max-width: 768px) 100vw, 768px"
             className="object-cover transition-transform duration-300 hover:scale-110"
+            loading="eager"
           />
         ) : (
           <div className="h-full w-full flex items-center justify-center bg-muted">

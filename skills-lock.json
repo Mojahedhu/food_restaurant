@@ -1,0 +1,209 @@
+{
+  "version": 1,
+  "skills": {
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "skillPath": "skills/agent-browser/SKILL.md",
+      "computedHash": "ecc7641aea05f85ca3b11e7759d32aaf52fe05946ab4b63739c7bf78a41237a2"
+    },
+    "ai-elements": {
+      "source": "vercel/ai-elements",
+      "sourceType": "github",
+      "skillPath": "skills/ai-elements/SKILL.md",
+      "computedHash": "dd67bf58bc932bf7289551a3c1a12298a3c817a129864ca89ac2845da6d614c5"
+    },
+    "autoship": {
+      "source": "vercel-labs/autoship",
+      "sourceType": "github",
+      "skillPath": "skills/autoship/SKILL.md",
+      "computedHash": "a813370b550f6b2a7c0dceba1c2f3c06978b10e4bbfbcf39421220d8140ab220"
+    },
+    "before-and-after": {
+      "source": "vercel-labs/before-and-after",
+      "sourceType": "github",
+      "skillPath": "skill/SKILL.md",
+      "computedHash": "feced4a359c330171cdeb22fcbdc232bd9621674a93dfd3822cf77403f15c437"
+    },
+    "codegen": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/codegen/SKILL.md",
+      "computedHash": "daf0352381a7de74c7d7784f683e4bb5c6e285301d6adf5e993d72dfa5371b47"
+    },
+    "core": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/core/SKILL.md",
+      "computedHash": "ff1d5f1daa4736237aab6c37b7642ae8e623d65b8cb2eb9916c6ba33384efb81"
+    },
+    "cra-to-next-migration": {
+      "source": "vercel-labs/migration-skills",
+      "sourceType": "github",
+      "skillPath": "cra-to-next-migration/SKILL.md",
+      "computedHash": "2c6d0f84ec8ddaeec2648e8d174fd254b1b470e68f05bab512b5fb2eed2da13e"
+    },
+    "devtools": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/devtools/SKILL.md",
+      "computedHash": "6fcfb1f4db31e1299ca64f2fbddc54d02c14968c6a9fa5b15b864dd0da09f7d0"
+    },
+    "directives": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/directives/SKILL.md",
+      "computedHash": "776cfa67f51752193c406dc23b39f0a69c69bb90c929fb115a5f914263e24fa2"
+    },
+    "image": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/image/SKILL.md",
+      "computedHash": "ad4f79be1e864fdf508c8a445ae4fc35d3b0ce3195b2fcca4f4f0a6f520a2fb9"
+    },
+    "ink": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/ink/SKILL.md",
+      "computedHash": "127794ab4d276c5dd3fba93d06d041edbb46481032b315b8b5bd24994e7bcff8"
+    },
+    "jotai": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/jotai/SKILL.md",
+      "computedHash": "25bddfd76eba7f21fe4b8bafd8309200674c3d61e125797601a49f3d8650b480"
+    },
+    "mcp": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/mcp/SKILL.md",
+      "computedHash": "8601f81c837895c306f30bf75ec494606f9213ae0c13d758c07059ff78540326"
+    },
+    "next": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/next/SKILL.md",
+      "computedHash": "4a609d04a169e0292feff34b22150044fdda0e75de17c03dd30b38fed1786a90"
+    },
+    "react": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/react/SKILL.md",
+      "computedHash": "42e6c3acd47b1f2374b7401fae31c5b496a3e12b0949289c9f5b60513c519316"
+    },
+    "react-email": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/react-email/SKILL.md",
+      "computedHash": "75441f1f69a7949aeb2208a6b5c22a7d2ce721bc8ee9b650371f0d8637778cd0"
+    },
+    "react-native": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/react-native/SKILL.md",
+      "computedHash": "bce560b25029037d424b5ec55bb9b3ec2b399ef98fd12c572327292744de84fe"
+    },
+    "react-pdf": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/react-pdf/SKILL.md",
+      "computedHash": "82c58b5177f429f759ea93d6b60264a4ffee9a8ca233a1d5186c85c3b0492516"
+    },
+    "react-three-fiber": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/react-three-fiber/SKILL.md",
+      "computedHash": "33cfac131cbe9c89b14c4b49ca01e0b0a4a3f9c23bb6c81ac0514143703283e8"
+    },
+    "redux": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/redux/SKILL.md",
+      "computedHash": "b61532c159d455bc5e903c116f235af16b5eb51a0e51955db55ca79d703e4f7d"
+    },
+    "remotion": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/remotion/SKILL.md",
+      "computedHash": "f46005be6dd80893835d4dee5f75dc45b21f2486ad2af3f14f709267d18b1d47"
+    },
+    "remotion-best-practices": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/remotion-best-practices/SKILL.md",
+      "computedHash": "8758414c52a59709c5d17e106df990c22bc85c5bb0a4a3dd517e397dfc07a2b5"
+    },
+    "shadcn": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "d6a9be8eeedea18343b5b15d6ac481a55436fe40db4b65d59858388072c239c4"
+    },
+    "shadcn-svelte": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn-svelte/SKILL.md",
+      "computedHash": "fcb9b65f29baf8a2e03960d37bceff6a71203aeb962105cf6f78c697c71efc3c"
+    },
+    "skill-creator": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "computedHash": "d8c8466e9d4dd30ee87a4976ba8af3e12013967d248ac26d5dc0ae78fe747725"
+    },
+    "solid": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/solid/SKILL.md",
+      "computedHash": "0c5856c5cb737477a5546c8fa05420a922615501aa45f324022e42c8e104f7ab"
+    },
+    "streamdown": {
+      "source": "vercel/streamdown",
+      "sourceType": "github",
+      "skillPath": "skills/streamdown/SKILL.md",
+      "computedHash": "c842552c75b80abb74ef8f92481d34684c709884dd2df22c2ab3b183aee582fe"
+    },
+    "svelte": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/svelte/SKILL.md",
+      "computedHash": "b9781032762ee9f12d1816804a10e09e5ce6d36754a5e916c5e77a9cdd6d4d28"
+    },
+    "turborepo": {
+      "source": "vercel/turborepo",
+      "sourceType": "github",
+      "skillPath": "skills/turborepo/SKILL.md",
+      "computedHash": "7bed931f62129bc3a7dea2da5ac46928f7c02054188b3d418971093a4b50904b"
+    },
+    "vercel-cli": {
+      "source": "vercel/vercel",
+      "sourceType": "github",
+      "skillPath": "skills/vercel-cli/SKILL.md",
+      "computedHash": "28a2c25884bd7272688d48f1563f048ecb9a1b21f900aa08406f56f33240932c"
+    },
+    "vue": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/vue/SKILL.md",
+      "computedHash": "c11732dd40f5c030b1e89eebf10c61c01966961f168bb11d99faf568eb5e36e8"
+    },
+    "xstate": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/xstate/SKILL.md",
+      "computedHash": "eb2f2587b606e1501a125df976292ddd7c886e52244e233428aa99dd5a048434"
+    },
+    "yaml": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/yaml/SKILL.md",
+      "computedHash": "6ba612b23b71ac5f8e79920890d132aed46a723084abd8179f1def51d6012298"
+    },
+    "zustand": {
+      "source": "vercel-labs/json-render",
+      "sourceType": "github",
+      "skillPath": "skills/zustand/SKILL.md",
+      "computedHash": "ecf89b93e27bb9283f373a65eeda302dac1bf89575ecd53edbaef53dc1a743f8"
+    }
+  }
+}

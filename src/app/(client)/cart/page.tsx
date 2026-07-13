@@ -1,36 +1,27 @@
 import auth from "../../../../auth";
-import { client } from "@/sanity/lib/client";
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import Container from "@/components/common/container";
 import CartLayout from "@/components/cart/cartLayout";
+import { Metadata } from "next";
+import { checkUserHasAddresses } from "@/lib/data/user";
+
+export const metadata: Metadata = {
+  title: "Shopping Cart | Food App",
+  description: "Review your items and proceed to checkout securely.",
+};
 
 const CartPage = async () => {
   const session = await auth();
 
   // Fetch user Address if authenticated
-  let hasAddresses = false;
-  if (session?.user?.email) {
-    try {
-      const userWithAddresses = await client.fetch(
-        `*[_type == "user" && email == $email][0]{
-        "hasAddresses": count(addresses) > 0
-      }`,
-        { email: session.user.email },
-      );
-      hasAddresses = userWithAddresses?.hasAddresses || false;
-    } catch (error) {
-      console.error("Error fetching user addresses", error);
-    }
-  }
+  // Cleanly delegate the fetch to our data layer
+  const hasAddresses = session?.user?.email
+    ? await checkUserHasAddresses(session.user.email)
+    : false;
 
   return (
-    <div>
-      <Breadcrumb
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Shopping", href: "cart" },
-        ]}
-      />
+    <div className="min-h-screen bg-gray-50/30">
+      <Breadcrumb items={[{ label: "Shopping", href: "cart" }]} />
       <main className="py-8 md:py-12">
         <Container>
           {/* Page Header */}

@@ -68,6 +68,9 @@ You must follow these strict guidelines for every single code generation task in
   - **Prop Drilling Elimination (The Next.js Way):** Absolutely minimize passing state setters, modal visibility flags, and mutation functions down the component tree (prop drilling).
     - **URL-Driven UI State:** For shared UI states (like opening an edit modal), avoid using `useState` in a parent component. Instead, push parameters to the URL (e.g., `?editReview=123`). Modals and components should independently read the URL search parameters to derive their visibility, preserving browser history and refresh-resilience.
     - **Self-Sufficient Mutations:** Do not pass mutation functions (like `onDelete`) down from parent lists to children. Child components (or their custom hooks) should independently invoke their own mutation hooks to remain highly cohesive and decoupled.
+  - **No Module Contamination (Server/Client Boundary Isolation):** Never import runtime values, constants, or functions from a Server-only file (like `src/lib/data/` or files using backend-only utilities) into a Client Component or Hook. Doing so forces Next.js to bundle and evaluate the server module in the browser, causing immediate runtime crashes (e.g., exposing Node.js APIs or crashing on server-side functions like `defineLive()`). 
+    - **Type-Only Imports:** If you must share a TypeScript type or interface from a Server file to a Client file, you must strictly use `import type { ... }` so the import is safely erased during compilation.
+    - **Shared Constants:** If you need to share hardcoded values (like pagination limits) between Server and Client, extract them into a separate, isolated `constants.ts` file that contains absolutely zero server-side dependencies or database imports.
 
 ## 8. Caching & Data Consistency (Next.js Revalidation)
 

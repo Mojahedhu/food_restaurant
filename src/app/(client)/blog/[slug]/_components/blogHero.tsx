@@ -2,21 +2,45 @@ import { Breadcrumb } from "@/components/common/breadcrumb";
 import { dateFormatter } from "@/lib/utils";
 
 import { Calendar, User } from "lucide-react";
+import { PostMainImage } from "@/../types/sanityTypes";
+import { urlFor } from "@/sanity/lib/image";
+import Image from "next/image";
 
 interface BlogHeroProps {
   title: string;
   authorName: string;
   publishedAt: string;
   slug: string;
+  mainImage?: PostMainImage;
 }
 
-function BlogHero({ title, authorName, publishedAt, slug }: BlogHeroProps) {
+function BlogHero({
+  title,
+  authorName,
+  publishedAt,
+  slug,
+  mainImage,
+}: BlogHeroProps) {
+  const bgImageUrl = mainImage
+    ? urlFor(mainImage).url()
+    : "/bg/single_blog_banner.jpg";
   return (
     <div
-      className="relative w-full py-12 md:py-20 flex items-center justify-center bg-cover bg-center text-white mb-12"
-      style={{ backgroundImage: `url("/bg/single_blog_banner.jpg")` }}
+      // className="relative w-full py-12 md:py-20 flex items-center justify-center bg-cover bg-center text-white mb-12"
+      // style={{ backgroundImage: `url("/bg/single_blog_banner.jpg")` }}
+      className="relative w-full py-16 md:py-24 flex items-center justify-center overflow-hidden mb-12 bg-gray-900"
     >
-      <div className="absolute inset-0 bg-orange-800/90"></div>
+      {/* Background Image using Next/Image for LCP optimization */}
+      <Image
+        src={bgImageUrl}
+        alt={title}
+        fill
+        priority
+        className="object-cover object-center z-0 opacity-40"
+        sizes="100vw"
+      />
+
+      <div className="absolute inset-0 bg-orange-800/30"></div>
       <div className="mx-auto relative px-4 text-center z-10 max-w-4xl">
         <div className="flex flex-wrap gap-2 justify-center mb-6">
           <span className="px-3 py-1 bg-white/20 text-white backdrop-blur-sm text-xs font-bold uppercase tracking-wider rounded-full border border-white/30"></span>
@@ -41,7 +65,7 @@ function BlogHero({ title, authorName, publishedAt, slug }: BlogHeroProps) {
           className="border-b border-border mt-8 bg-transparent p-0 border-none [&_li]:text-white/80 [&_a]:text-white/80 [&_a]:hover:text-white [&_span]:text-white justify-center"
           items={[
             { label: "Blog", href: "/blog" },
-            { label: title, href: `/blog/${slug}` },
+            { label: "Article", href: `/blog/${slug}` },
           ]}
         />
       </div>

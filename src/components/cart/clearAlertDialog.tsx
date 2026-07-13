@@ -1,4 +1,3 @@
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,12 +50,12 @@ const ClearAlertDialog = ({
           </AlertDialogHeader>
         </div>
         <AlertDialogFooter className="flex-col sm:flex-row gap-3 pt-4">
-          <AlertDialogCancel className="flex-1 m-0 border-2 hover:bg-muted font-medium px-3 py-2">
+          <AlertDialogCancel className="flex-1 m-0 border-2 hover:bg-muted font-medium px-3 py-2 cursor-pointer">
             Keep Items
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onClearCart}
-            buttonClassName="flex-1 m-0 bg-destructive hover:bg-destructive/90 focus:ring-destructive font-semibold shadow-lg hover:shadow-destructive/20 px-3 py-2"
+            buttonClassName="flex-1 m-0 bg-destructive hover:bg-destructive/90 focus:ring-destructive font-semibold shadow-lg hover:shadow-destructive/20 px-3 py-2 cursor-pointer"
           >
             <Trash2 className="mr-2 h-4 w-4" />
             Clear Cart

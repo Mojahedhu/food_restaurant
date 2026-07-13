@@ -6,7 +6,7 @@ import { Address } from "../../types/sanityTypes";
 
 const query = ADDRESSES_QUERY;
 
-export function useLiveAddress(userId: string) {
+export function useLiveAddress(userId?: string) {
   const {
     setAddresses,
     addAddress,
