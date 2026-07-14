@@ -1,6 +1,6 @@
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import CheckoutClientPage from "./checkoutClientPage";
-import auth from "../../../../auth";
+import auth from "@/../auth";
 
 interface CheckoutPageProps {
   searchParams: Promise<{ addressId: string }>;
@@ -31,8 +31,8 @@ const CheckoutPage = async ({ searchParams }: CheckoutPageProps) => {
           </div>
           <CheckoutClientPage
             addressId={addressId}
-            userId={userId!}
-            session={session!}
+            userId={userId}
+            session={session}
           />
         </div>
       </main>

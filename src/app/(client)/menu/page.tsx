@@ -1,6 +1,4 @@
-import { client } from "@/sanity/lib/client";
 import { Suspense } from "react";
-import { FoodWithDetails } from "../../../../types/sanityTypes";
 import { Breadcrumb } from "@/components/common/breadcrumb";
 import MenuClient from "./menu-client";
 import { getMenuFoods, getMenuTotalCount, SortOption } from "@/lib/data/menu";

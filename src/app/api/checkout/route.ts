@@ -1,58 +1,133 @@
 import { client as adminClient } from "@/sanity/lib/client";
-import { CartItem } from "../../../stores/cart/cartStore";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { nanoid } from "zod/mini";
+import { z } from "zod";
+
+// Compile-Time & Runtime Safety with Zod
+const cartItemSchema = z.object({
+  id: z.string(),
+  foodId: z.string(),
+  name: z.string(),
+  price: z.number().min(0),
+  quantity: z.number().min(1),
+  image: z.string().optional(),
+  size: z.string().optional(),
+  variety: z.string().optional(),
+});
+const deliveryAddressSchema = z.object({
+  _id: z.string().optional(),
+  type: z.string().optional(),
+  label: z.string().optional(),
+  country: z.string().optional(),
+  state: z.string().optional(),
+  city: z.string().optional(),
+  street: z.string().optional(),
+  zipCode: z.string().optional(),
+  phone: z.string().optional(),
+  apartment: z.string().optional(),
+  instructions: z.string().optional(),
+});
+const checkoutPayloadSchema = z.object({
+  items: z.array(cartItemSchema).min(1, "Cart cannot be empty"),
+  deliveryAddress: deliveryAddressSchema,
+  paymentMethod: z.enum(["online", "cod"]),
+  userId: z.string().optional(),
+  // Use generic empty string literals for unauthenticated sessions
+  session: z
+    .object({
+      user: z
+        .object({
+          email: z.email().optional(),
+          name: z.string().optional(),
+        })
+        .optional(),
+    })
+    .nullable()
+    .optional(),
+});
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const {
-      items,
-      deliveryAddress,
-      paymentMethod,
-      userId,
-      userEmail,
-      userName,
-      // subtotal,
-      // deliveryFee,
-      // tax,
-      // total,
-    } = body;
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        { message: "Invalid JSON payload format" },
+        { status: 400 },
+      );
+    }
 
-    // 1. SECURE PRICE FETCH: Get current prices from Sanity
-    const foodIds = items.map((i: CartItem) => i.foodId);
+    // Isolate Validation via safeParse (Rule: Defense-in-Depth)
+    const parseResult = checkoutPayloadSchema.safeParse(body);
+    console.log("parseResult", parseResult.data);
+    if (!parseResult.success) {
+      console.error(
+        "[API_CHECKOUT_VALIDATION_ERROR]",
+        z.treeifyError(parseResult.error),
+      );
+      return NextResponse.json(
+        { message: "Invalid checkout data provided" },
+        { status: 400 },
+      );
+    }
+
+    const { items, deliveryAddress, paymentMethod, userId, session } =
+      parseResult.data;
+
+    // 1. SECURE PRICE FETCH:  Get current trusted prices from Sanity DB
+    const foodIds = items.map((i) => i.foodId);
     const dbFoods = (await adminClient.fetch(
       `*[_type == "food" && _id in $foodIds]{ _id, price }`,
       { foodIds },
     )) as { _id: string; price: string }[];
 
-    // 2. SECURE CALCULATION
-    const subtotal = items.reduce((acc: number, item: CartItem) => {
-      const price = dbFoods.find((f) => f._id === item.foodId)?.price || 0;
-      return acc + +price * item.quantity;
+    if (!dbFoods || dbFoods.length === 0) {
+      return NextResponse.json(
+        { message: "Products not found or no longer available" },
+        { status: 404 },
+      );
+    }
+
+    // 2. SECURE CALCULATION (Never trust client-side prices)
+    const subtotal = items.reduce((acc, item) => {
+      const dbRecord = dbFoods.find((f) => f._id === item.foodId);
+      const securePrice = dbRecord ? Number(dbRecord.price) : 0;
+      return acc + securePrice * item.quantity;
     }, 0);
+
+    if (subtotal <= 0) {
+      return NextResponse.json(
+        { message: "Invalid order total. Please refresh your cart." },
+        { status: 400 },
+      );
+    }
 
     const deliveryFee = 5.0;
     const tax = Number((subtotal * 0.1).toFixed(2));
     const total = Number((subtotal + deliveryFee + tax).toFixed(2));
 
-    // 2. Generate a Unique Order Number
-    const orderNumber = `ORD-${new Date().getTime()}`;
+    // 3. Generate Order Number
+    const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-    // 3. Prepare the Sanity Document
+    // 4. Prepare Sanity Document Structure
+
+    const userEmail = session?.user?.email || "guest@example.com";
+    const userName = session?.user?.name || "Guest Checkout";
+
     const orderDoc = {
       _type: "order",
       orderNumber,
-      user: { _type: "reference", _ref: userId },
+      user: userId ? { _type: "reference", _ref: userId } : undefined,
       userEmail,
       userName,
-      items: items.map((item: CartItem) => ({
+      items: items.map((item) => ({
         _key: nanoid(),
         foodId: item.foodId,
         name: item.name,
         image: item.image,
-        price: dbFoods.find((f) => f._id === item.foodId)?.price || 0,
+        price: Number(dbFoods.find((f) => f._id === item.foodId)?.price || 0),
         quantity: item.quantity,
         size: item.size || "",
         variety: item.variety || "",
@@ -66,7 +141,7 @@ export async function POST(request: Request) {
       tax,
       total,
       originalTotal: total,
-      paymentMethod: paymentMethod === "online" ? "online" : "cod",
+      paymentMethod,
       paymentStatus: "pending",
       // THE LINK: Hardcoded reference to our seeded 'Order Placed' status
       status: { _type: "reference", _ref: "status-placed" },
@@ -76,6 +151,7 @@ export async function POST(request: Request) {
     const createdOrder = await adminClient.create(orderDoc);
 
     // --- Branching Logic ---
+    // 5. Branching Logic (COD vs Stripe)
 
     // 1. Cash on Delivery
     if (paymentMethod === "cod") {
@@ -85,36 +161,48 @@ export async function POST(request: Request) {
       });
     }
 
-    // 2. Online Payment (Stripe)
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: items.map((item: CartItem) => ({
+    // 2. Online Payment (Stripe Execution)
+    const stripeLineItems = items.map((item) => {
+      const dbRecord = dbFoods.find((f) => f._id === item.foodId);
+      const securePrice = dbRecord ? Number(dbRecord.price) : 0;
+      return {
         price_data: {
           currency: "usd",
-          product_data: { name: item.name },
-          unit_amount: Math.round(
-            Number(dbFoods.find((f) => f._id === item.foodId)?.price) * 100,
-          ),
+          product_data: {
+            name: item.name,
+            images: item.image ? [item.image] : [],
+          },
+          unit_amount: Math.round(securePrice * 100),
         },
         quantity: item.quantity,
-      })),
+      };
+    });
+
+    const stripeSession = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: stripeLineItems,
       mode: "payment",
       metadata: { sanityOrderId: createdOrder._id },
       success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/order-success?orderId=${createdOrder._id}&sessionId={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout`,
     });
 
-    // Save session ID to Sanity
+    // Save transient session ID back to Sanity for Webhook reconciliation
     await adminClient
       .patch(createdOrder._id)
-      .set({ StripeSessionId: session.id })
+      .set({ StripeSessionId: stripeSession.id })
       .commit();
-    return NextResponse.json({ url: session.url });
+
+    return NextResponse.json({ url: stripeSession.url });
   } catch (error) {
-    console.error("Checkout API error", error);
-    const err = error as { message: string; code: string };
+    // Isolated Error Logging - Only print raw errors to Server Console
+    console.error("[CHECKOUT_API_INTERNAL_ERROR]", error);
+
     return NextResponse.json(
-      { error: err.message || String(error) },
+      {
+        message:
+          "An unexpected database error occurred while processing your checkout",
+      },
       { status: 500 },
     );
   }

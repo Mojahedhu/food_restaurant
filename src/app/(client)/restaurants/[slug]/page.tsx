@@ -35,8 +35,6 @@ async function RestaurantDetailsPage({
     return <RestaurantPageSkeleton />;
   }
   const isOpen = isRestaurantOpen(restaurantDetails);
-  console.log(restaurantDetails);
-  console.log("isOpen", isOpen);
 
   return (
     <RouteTransition>

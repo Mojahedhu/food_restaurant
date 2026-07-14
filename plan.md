@@ -57,7 +57,9 @@ You must follow these strict guidelines for every single code generation task in
 
 - **Strict Separation of Concerns & Modular Architecture:** Enforce a strict decoupling of UI, logic, data, and types. A single component file must only manage layout and presentation.
   - **UI/Presentation:** Keep JSX/TSX lean; delegate all complex state, side effects, and event handlers to dedicated **Custom Hooks** (e.g., `useTaskManager`). _Boilerplate Guard:_ Progressive abstraction is preferred. For simple UI components (under 50 lines with basic local toggles), keeping state inline is allowed. Abstract into a custom hook only when the component handles asynchronous fetches, side-effects, or complex business logic.
-  - **Data Layer & Utils:** Isolate API fetching, data mutations, and heavy business logic into separate service modules, server actions, or utility files.
+  - **Single Source of Truth for Business Logic (Service Layer Pattern):**
+    - Business logic must live in `src/lib/services/*.ts` as pure, highly testable functions.
+    - Entry points (Server Actions, Route Handlers, and MCP tools) must act as thin wrappers only. Their sole responsibility is handling auth/session resolution and input parsing (e.g., Zod validation) before delegating directly to the service layer.
   - **Type Definitions:** Extract TypeScript interfaces and types into localized or global `.types.ts` files rather than inlining them.
   - **Helper Function Classification:** Classify and separate helpers based on side-effects:
     - **Pure Helper Functions (Calculations, Formatting):** Place in `src/lib/utils/` (e.g., `src/lib/utils/review-helpers.ts` for feature-specific or `helpers.ts` for global). They must have zero side-effects and be easily unit-tested.

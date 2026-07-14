@@ -1,65 +1,60 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAddressStore } from "@/features/address/store/addressStore";
 import { useLiveAddress } from "@/hooks/useLiveAddress";
-import { cn } from "@/lib/utils";
-import {
-  CheckCircle,
-  Container,
-  CreditCard,
-  MapPin,
-  ShoppingCart,
-  Utensils,
-  Wallet,
-} from "lucide-react";
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { Session } from "next-auth";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import PaymentLoadingModal from "@/features/checkout/components/paymentLoadingModal";
-import { delay } from "@/lib/utils";
 import { useCartStore } from "@/stores/cart/cartStore";
+import { useCheckout } from "@/features/checkout/hooks/useCheckout";
+import { DeliveryAddressCard } from "@/features/checkout/components/deliveryAddressCard";
+import { PaymentMethodSelector } from "@/features/checkout/components/paymentMethodSelector";
+import { OrderItemsList } from "@/features/checkout/components/orderItemsList";
+import { OrderSummarySidebar } from "@/features/checkout/components/orderSummarySidebar";
+import { ShoppingCart } from "lucide-react";
 
 interface CheckoutClientPageProps {
   addressId: string;
-  userId: string;
-  session: Session;
+  userId?: string;
+  session: Session | null;
 }
+
+const DELIVERY_FEE = 5.0;
 
 const CheckoutClientPage = ({
   addressId,
   userId,
   session,
 }: CheckoutClientPageProps) => {
-  const [mounted, setMounted] = useState(false);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [orderLoading, setOrderLoading] = useState<
-    null | "connecting" | "processing"
-  >(null);
   const router = useRouter();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    "online" | "cod"
-  >("online");
-  const { addresses } = useAddressStore();
-  const initializing = useAddressStore((state) => state.ui.initializing);
-  const { items, _hasHydrated, clearCart } = useCartStore();
+  const [mounted, setMounted] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "cod">(
+    "online",
+  );
 
+  // Global Stores
+  const { addresses } = useAddressStore();
+  const initializingAddress = useAddressStore((state) => state.ui.initializing);
+  const { items, _hasHydrated } = useCartStore();
+
+  // Custom Hooks
+  useLiveAddress(userId);
+  const { handlePlaceOrder, loading, orderLoading } = useCheckout();
+
+  // Derived State Lookups
+  const isReady = _hasHydrated && mounted;
+  const address = addresses.find((addr) => addr._id === addressId);
+
+  // Local UI Calculations (Sanity verified on backend)
   const subTotal = items.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0,
   );
-  const tax = subTotal * 0.1;
-  const DELIVERY_FEE = 5;
-  const total = subTotal + tax + DELIVERY_FEE;
-  useLiveAddress(userId);
-  const defaultAddress = addresses.filter((addr) => addr._id === addressId)[0];
-  const cleanedAddress = { ...defaultAddress };
-  delete cleanedAddress?.isDefault;
-  const isReady = _hasHydrated && mounted;
+  const tax = Number((subTotal * 0.1).toFixed(2));
+
+  const total = Number((subTotal + tax + DELIVERY_FEE).toFixed(2));
+
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
@@ -67,115 +62,52 @@ const CheckoutClientPage = ({
 
   useEffect(() => {
     if (!isReady) return;
-    if (items.length <= 0) {
+    if (items.length === 0) {
       router.replace("/cart");
     }
   }, [isReady, router, items.length]);
 
   if (!isReady) {
     return (
-      <div className="flex items-center justify-center h-[80%] w-screen animate-pulse">
-        <ShoppingCart size={300} className="text-primary/10" />
+      <div className="flex flex-col items-center justify-center h-[60vh] w-full animate-pulse gap-4">
+        <ShoppingCart size={120} className="text-primary/20" />
+        <p className="text-muted-foreground font-medium">
+          Preparing secure checkout...
+        </p>
       </div>
     );
   }
 
-  if (items.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-[80%] w-screen animate-pulse">
-        <ShoppingCart size={300} className="text-primary/10" />
-        <p className="text-muted-foreground">No items in cart</p>
-      </div>
-    );
-  }
+  // Prevent flash rendering before the redirect fires in useEffect
+  if (items.length === 0) return null;
 
-  const preloadStripePage = async (url: string) => {
-    return new Promise<void>((resolve) => {
-      const link = document.createElement("link");
-      link.rel = "preconnect";
-      link.href = new URL(url).origin;
+  const onPlaceOrder = () => {
+    if (!address) {
+      toast.error("Please select a valid delivery address");
+      return;
+    }
 
-      link.onload = () => resolve();
-      link.onerror = () => resolve(); // don’t block if it fails
-
-      document.head.appendChild(link);
-
-      // Fallback resolve (preconnect doesn't always fire reliably)
-      setTimeout(resolve, 300);
+    // Strip client-only state variables before mutation dispatch
+    const cleanedAddress = { ...address };
+    delete cleanedAddress.isDefault;
+    handlePlaceOrder({
+      items,
+      deliveryAddress: cleanedAddress,
+      paymentMethod,
+      userId,
+      session,
     });
   };
-
-  const handlePlaceOrder = async () => {
-    // 1. Show your Shadcn PaymentLoadingModal
-    setLoading(true);
-
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          items,
-          deliveryAddress: cleanedAddress,
-          paymentMethod: selectedPaymentMethod,
-          userId,
-          userEmail: session?.user?.email,
-          userName: session?.user?.name,
-          subTotal,
-          deliveryFee: DELIVERY_FEE,
-          tax,
-          total,
-        }),
-      });
-
-      let data;
-
-      try {
-        data = await res.json();
-      } catch {
-        toast.error("Invalid server response");
-        throw new Error("Invalid server response");
-      }
-
-      console.log("Status:", res.status);
-      console.log("Checkout response:", data);
-
-      if (!res.ok) {
-        toast.error(data?.message || "Checkout failed");
-        throw new Error(data?.message || "Checkout failed");
-      }
-
-      if (!data?.url) {
-        toast.error("Failed to place order: Missing checkout URL");
-        throw new Error("Failed to place order: Missing checkout URL");
-      }
-      // Step 1: UI feedback
-      setOrderLoading("connecting");
-      await delay(1000);
-
-      setOrderLoading("processing");
-      await Promise.all([delay(1500), preloadStripePage(data.url)]);
-
-      // Step 2: Clean up BEFORE leaving
-      clearCart();
-
-      // Step 3: Redirect (LAST STEP)
-      // 3. Redirect to Stripe or Order Detail page
-      // eslint-disable-next-line react-hooks/immutability
-      window.location.href = data.url;
-    } catch (error) {
-      console.error(error);
-      toast.error("Checkout API Error: " + error);
-    } finally {
-      await delay(2000);
-      setLoading(false);
-      setOrderLoading(null);
-    }
-  };
+  console.log("items", items);
+  console.log("address", address);
+  console.log("paymentMethod", paymentMethod);
+  console.log("userId", userId);
+  console.log("session", session);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 relative">
       <div className="lg:col-span-2 space-y-6">
-        {initializing ? (
+        {/* {initializingAddress ? (
           <Card className="flex flex-col gap-6! drop-shadow-xl">
             <CardHeader className="grid-rows-[auto_auto]">
               <CardTitle className="leading-none font-semibold flex items-center gap-2 animate-pulse">
@@ -229,8 +161,12 @@ const CheckoutClientPage = ({
               </div>
             </CardContent>
           </Card>
-        )}
-        <Card className="flex flex-col gap-6! drop-shadow-xl">
+        )} */}
+        <DeliveryAddressCard
+          address={address}
+          isLoading={initializingAddress}
+        />
+        {/* <Card className="flex flex-col gap-6! drop-shadow-xl">
           <CardHeader className="grid-rows-[auto_auto]">
             <CardTitle className="leading-none font-semibold flex items-center gap-2">
               <Wallet className="h-5 w-5 text-primary " />
@@ -289,8 +225,12 @@ const CheckoutClientPage = ({
               </button>
             </div>
           </CardContent>
-        </Card>
-        {_hasHydrated && items.length > 0 ? (
+        </Card> */}
+        <PaymentMethodSelector
+          selected={paymentMethod}
+          onSelect={setPaymentMethod}
+        />
+        {/* {_hasHydrated && items.length > 0 ? (
           <Card className="flex flex-col gap-6! drop-shadow-xl">
             <CardHeader className="grid-rows-[auto_auto]">
               <CardTitle className="leading-none font-semibold flex items-center gap-2">
@@ -358,10 +298,11 @@ const CheckoutClientPage = ({
               </div>
             </CardContent>
           </Card>
-        )}
+        )} */}
+        <OrderItemsList items={items} isHydrated={_hasHydrated} />
       </div>
       <div className="lg:col-span-1">
-        <Card className="drop-shadow-lg sticky top-24">
+        {/* <Card className="drop-shadow-lg sticky top-24">
           <CardHeader className="grid-rows-[auto_auto]">
             <CardTitle className="leading-none font-semibold flex items-center gap-2">
               Order Summary
@@ -410,8 +351,18 @@ const CheckoutClientPage = ({
               By placing this order, you agree to our terms and conditions
             </p>
           </CardContent>
-        </Card>
+        </Card> */}
+        <OrderSummarySidebar
+          subTotal={subTotal}
+          tax={tax}
+          deliveryFee={DELIVERY_FEE}
+          total={total}
+          paymentMethod={paymentMethod}
+          onPlaceOrder={onPlaceOrder}
+          disabled={!address || loading}
+        />
       </div>
+      {/* Renders your original Loading Overlay seamlessly */}
       <PaymentLoadingModal isOpen={loading} orderLoading={orderLoading} />
     </div>
   );

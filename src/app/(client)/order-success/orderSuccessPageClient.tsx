@@ -1,6 +1,6 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Order } from "../../../../types/sanityTypes";
+import { Order } from "@/../types/sanityTypes";
 import {
   ArrowRight,
   CircleCheckBig,
@@ -17,6 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useCartStore } from "@/stores/cart/cartStore";
+import { useEffect } from "react";
 
 interface OrderSuccessPageClientProps {
   order: Order;
@@ -24,7 +26,13 @@ interface OrderSuccessPageClientProps {
 
 const OrderSuccessPageClient = ({ order }: OrderSuccessPageClientProps) => {
   const router = useRouter();
-  console.log(order);
+
+  // 👈 3. Pull clearCart from your store
+  const { clearCart } = useCartStore();
+  // 👈 4. Add the useEffect to clear the cart immediately when this page loads
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
 
   return (
     <div className="bg-linear-to-b from-primary/5 to-background min-h-screen py-12">
@@ -138,7 +146,11 @@ const OrderSuccessPageClient = ({ order }: OrderSuccessPageClientProps) => {
                 {order.items &&
                   order.items.map((item, index) => (
                     <div
-                      key={typeof item._key === "string" ? item._key : `item-${index}`}
+                      key={
+                        typeof item._key === "string"
+                          ? item._key
+                          : `item-${index}`
+                      }
                       className="flex items-center justify-between py-2"
                     >
                       <div className="flex-1">
@@ -192,9 +204,9 @@ const OrderSuccessPageClient = ({ order }: OrderSuccessPageClientProps) => {
               className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-300 group rounded-lg cursor-pointer"
               onClick={() => router.push(`user/orders/${order._id}`)}
             >
-              <Truck className="mr-3 h-5 w-5 group-hover:scale-110 use-effect" />
+              <Truck className="mr-3 h-5 w-5 group-hover:scale-110 hover-effect" />
               Track Your Order
-              <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 use-effect" />
+              <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 hover-effect" />
             </Button>
             <Button
               size={"lg"}

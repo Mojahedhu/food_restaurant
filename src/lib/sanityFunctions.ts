@@ -16,7 +16,7 @@ import {
   LatestPost,
   PostCard,
   PostDetails,
-} from "../../types/sanityTypes";
+} from "@/../types/sanityTypes";
 import { sanityFetch } from "@/sanity/lib/live";
 
 //================================================================
