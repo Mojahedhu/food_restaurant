@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ProductSale } from "@/actions/admin-analytics";
+import { ProductSale } from "@/lib/services/admin.analytics.service";
+
 import { formatCurrency } from "@/lib/utils";
 
 interface TopSellingProductsProps {

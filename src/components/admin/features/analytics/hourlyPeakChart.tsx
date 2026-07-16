@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { HourlyLoad } from "@/actions/admin-analytics";
+import { HourlyLoad } from "@/lib/services/admin.analytics.service";
 import {
   BarChart,
   Bar,

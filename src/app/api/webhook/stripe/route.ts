@@ -1,9 +1,10 @@
 import { stripe } from "@/lib/stripe";
-import { client as adminClient } from "@/sanity/lib/client";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { handlePaymentSuccess, handlePaymentFailure } from "@/lib/services/client.checkout.service";
+import { ServiceError } from "@/lib/services/errors";
 
 export async function POST(req: Request) {
   try {
@@ -49,24 +50,13 @@ export async function POST(req: Request) {
     // ✅ Handle success payment
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-
-      // Strict Optional Chaining (plan.md Rule 4)
       const orderId = session.metadata?.sanityOrderId;
 
       if (orderId) {
-        // Secure server-side mutation
-        await adminClient
-          .patch(orderId)
-          .set({
-            paymentStatus: "paid",
-            status: {
-              _type: "reference",
-              _ref: "status-confirmed",
-            },
-          })
-          .commit();
+        // Secure server-side mutation using the Service Layer
+        await handlePaymentSuccess(orderId);
 
-        // 🔄 Explicit Cache Revalidation (plan.md Rule 8)
+        // 🔄 Explicit Cache Revalidation
         revalidatePath(`/user/orders/${orderId}`);
         revalidatePath(`/user/orders`);
       }
@@ -75,24 +65,13 @@ export async function POST(req: Request) {
     // ❌ Handle failed payment
     if (event.type === "checkout.session.expired") {
       const session = event.data.object as Stripe.Checkout.Session;
-
-      // Strict Optional Chaining
       const orderId = session?.metadata?.sanityOrderId;
 
       if (orderId) {
-        // Secure server-side mutation
-        await adminClient
-          .patch(orderId)
-          .set({
-            paymentStatus: "failed",
-            status: {
-              _type: "reference",
-              _ref: "status-cancelled",
-            },
-          })
-          .commit();
+        // Secure server-side mutation using the Service Layer
+        await handlePaymentFailure(orderId);
 
-        // 🔄 Explicit Cache Revalidation (plan.md Rule 8)
+        // 🔄 Explicit Cache Revalidation
         revalidatePath(`/user/orders/${orderId}`);
         revalidatePath(`/user/orders`);
       }
@@ -100,7 +79,15 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    // 🛡️ Defense-in-Depth: Isolated Error Logging (plan.md Rule 3)
+    if (error instanceof ServiceError) {
+      console.error("[STRIPE_WEBHOOK_SERVICE_ERROR]", error.message);
+      return NextResponse.json(
+        { message: "A business logic error occurred processing the webhook" },
+        { status: 400 },
+      );
+    }
+
+    // 🛡️ Defense-in-Depth: Isolated Error Logging
     console.error("[STRIPE_WEBHOOK_INTERNAL_ERROR]", error);
     // Standard production-safe error contract
     return NextResponse.json(

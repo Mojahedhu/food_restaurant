@@ -1,31 +1,24 @@
 import { Breadcrumb } from "@/components/common/breadcrumb";
-import CategoriesHero from "./_components/categoriesHero";
-import CategoriesGrid from "./_components/categoriesGrid";
-import { getCategories } from "@/lib/sanityFunctions";
 import CategoriesFooter from "./_components/categoriesFooter";
 import { Suspense } from "react";
+import CategoriesContent from "./_components/categoriesContent";
+import CategoriesSkeleton from "./_components/categoriesSkeleton";
 
-async function CategoriesPage() {
-  const categories = await getCategories();
+export const metadata = {
+  title: "Categories",
+  description: "Browse our delicious food categories.",
+};
 
+function CategoriesPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <Breadcrumb
-        items={[
-          { label: "Home", href: "/" },
-          { label: "Categories", href: "/categories" },
-        ]}
-      />
-      <CategoriesHero itemCount={categories.length} />
-      <Suspense
-        fallback={
-          <div className="h-screen flex justify-center">
-            <div className="mt-12">Loading categories...</div>
-          </div>
-        }
-      >
-        <CategoriesGrid categories={categories} />
-      </Suspense>
+    <div className="min-h-screen bg-background flex flex-col">
+      <Breadcrumb items={[{ label: "Categories", href: "/categories" }]} />
+      <main className="flex-1">
+        {/* Suspense boundary activates the Skeleton while fetching categories */}
+        <Suspense fallback={<CategoriesSkeleton />}>
+          <CategoriesContent />
+        </Suspense>
+      </main>
       <CategoriesFooter />
     </div>
   );

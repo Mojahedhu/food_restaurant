@@ -19,9 +19,9 @@ const FoodCards = ({
   const reviewCount = food.totalReviews || 0;
 
   return (
-    <div className="group" {...props}>
+    <div className="group h-full flex flex-col" {...props}>
       {/* Image */}
-      <Link href={`/food/${food.slug}`}>
+      <Link href={`/food/${food.slug}`} className="shrink-0">
         {food?.images && food.images[0] && (
           <div className="relative w-full h-56 overflow-hidden rounded-lg">
             <Image
@@ -36,8 +36,8 @@ const FoodCards = ({
         )}
       </Link>
       {/* Content */}
-      <div className="py-2 space-y-1">
-        <div>
+      <div className="py-2 flex flex-col flex-1">
+        <div className="flex-1">
           <div className="flex justify-start">
             {food.category && (
               <span className="text-xs font-medium">{food.category.name}</span>
@@ -58,12 +58,12 @@ const FoodCards = ({
                 </span>
               </>
             ) : (
-              <div className="flex items-center gap-2 my-1">
+              <>
                 <StarRating rating={0} showValue={false} size="sm" />
                 <span className="text-xs text-muted-foreground">
                   (No reviews yet)
                 </span>
-              </div>
+              </>
             )}
           </div>
           {/* price */}

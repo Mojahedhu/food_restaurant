@@ -4,6 +4,7 @@ import OrderSuccessPageClient from "./orderSuccessPageClient";
 import { Order } from "@/../sanity.types";
 import { stripe } from "@/lib/stripe";
 import auth from "@/../auth";
+import { cookies } from "next/headers";
 
 interface OrderSuccessPageProps {
   searchParams: Promise<{
@@ -13,43 +14,64 @@ interface OrderSuccessPageProps {
 }
 
 const OrderSuccessPage = async ({ searchParams }: OrderSuccessPageProps) => {
+  // 🚀 Fire all independent promises at the exact same time
+  const [params, session, cookieStore] = await Promise.all([
+    searchParams,
+    auth(),
+    cookies(),
+  ]);
+  const { orderId, sessionId } = await params;
+
+  const userId = session?.user?.id;
+
+  if (!orderId) {
+    redirect("/");
+  }
+
   // 1. Declare the order variable outside the try/catch scope
   let order: Order | null = null;
+  let redirectPath: string | null = null;
   try {
-    const { orderId, sessionId } = await searchParams;
-    const session = await auth();
-    const userId = session?.user?.id;
-
-    if (!orderId) {
-      redirect("/");
-    }
-
     // 2. Fetch the data inside the try/catch
     order = (await client.getDocument(orderId)) as Order | null;
 
     if (!order) {
-      redirect("/");
-    }
+      redirectPath = "/";
 
-    // 🔒 Security: Prevent users from viewing other people's orders
-    if (order.user?._ref && order.user._ref !== userId) {
-      redirect("/");
-    }
+      // 🔒 Security: Prevent users from viewing other people's orders
+    } else if (order.user?._ref && order.user._ref !== userId) {
+      redirectPath = "/";
+    } else {
+      // 🔐 1. Stripe flow (manual verification)
+      if (order.paymentMethod === "online") {
+        if (!sessionId) {
+          redirectPath = `/user/orders/${order._id}`;
+        } else {
+          const stripeSession =
+            await stripe.checkout.sessions.retrieve(sessionId);
 
-    // 🔐 1. Stripe flow (manual verification)
-    if (order.paymentMethod === "online") {
-      if (!sessionId) {
-        redirect(`/user/orders/${order._id}`);
+          if (stripeSession.payment_status !== "paid") {
+            redirectPath = `/checkout`;
+            // ✅ update order manually (webhook replacement)
+          } else if (order.paymentStatus !== "paid") {
+            await client
+              .patch(order._id)
+              .set({
+                paymentStatus: "paid",
+                status: { _type: "reference", _ref: "status-confirmed" },
+              })
+              .commit();
+          }
+        }
       }
 
-      const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
-
-      if (stripeSession.payment_status !== "paid") {
-        redirect(`/checkout`);
-      }
-
-      // ✅ update order manually (webhook replacement)
-      if (order.paymentStatus !== "paid") {
+      // 🟩 2. COD flow
+      if (
+        order.paymentMethod === "cod" &&
+        order.paymentStatus !== "paid" &&
+        !redirectPath
+      ) {
+        // ✅ Update order manually
         await client
           .patch(order._id)
           .set({
@@ -58,35 +80,29 @@ const OrderSuccessPage = async ({ searchParams }: OrderSuccessPageProps) => {
           })
           .commit();
       }
-    }
 
-    // 🟩 2. COD flow
-    if (order.paymentMethod === "cod") {
-      // ✅ Update order manually
-      if (order.paymentStatus !== "paid") {
-        await client
-          .patch(order._id)
-          .set({
-            paymentStatus: "paid",
-            status: { _type: "reference", _ref: "status-confirmed" },
-          })
-          .commit();
+      // 🔐 3. STRICT One-Time Access Protection
+      if (!redirectPath) {
+        const accessCookie = cookieStore.get(`order_access_${order._id}`);
+        if (order.isViewed && !accessCookie) {
+          // If the user hits refresh, smoothly send them to their permanent order receipt
+          redirectPath = `/user/orders/${order._id}`;
+        } else if (!order.isViewed) {
+          await client.patch(order._id).set({ isViewed: true }).commit();
+        }
       }
     }
-
-    // 🔐 3. One-Time Access Protection (Polished UX)
-    if (order.isViewed) {
-      // If the user hits refresh, smoothly send them to their permanent order receipt
-      redirect(`/user/orders/${order._id}`);
-    }
-
-    // Mark as viewed so subsequent refreshes gracefully redirect
-    await client.patch(order._id).set({ isViewed: true }).commit();
   } catch (error) {
     // 🛡️ Defense-in-depth: Never leak crashes to the client UI
     console.error("[ORDER_SUCCESS_PAGE_ERROR]", error);
 
     // Redirect securely back to a safe route
+    redirectPath = "/";
+  }
+  if (redirectPath) {
+    redirect(redirectPath);
+  }
+  if (!order) {
     redirect("/");
   }
   return <OrderSuccessPageClient order={order} />;

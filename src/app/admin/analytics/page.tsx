@@ -1,12 +1,11 @@
-import {
-  AnalyticsData,
-  fetchAdminAnalyticsData,
-} from "@/actions/admin-analytics";
+import { fetchAdminAnalyticsData } from "@/actions/admin-analytics";
+
 import { AnalyticsMetricCards } from "@/components/admin/features/analytics/analyticsMetricCards";
 import { InteractiveSalesChart } from "@/components/admin/features/analytics/interactiveSalesChart";
 import { CategoryDistribution } from "@/components/admin/features/analytics/categoryDistribution";
 import { TopSellingProducts } from "@/components/admin/features/analytics/topSellingProducts";
 import { HourlyPeakChart } from "@/components/admin/features/analytics/hourlyPeakChart";
+import { AnalyticsData } from "@/lib/services/admin.analytics.service";
 
 export const metadata = {
   title: "Admin | Performance Analytics",

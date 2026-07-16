@@ -2,7 +2,7 @@ import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
 
 import { ChefHat, Type } from "lucide-react";
-import { CategoryWithCount } from "../../../../../../types/sanityTypes";
+import { CategoryWithCount } from "@/../types/sanityTypes";
 
 interface CategoryDetailsHeroProps {
   categoryDetails: CategoryWithCount;
@@ -12,10 +12,19 @@ function CategoryDetailsHero({ categoryDetails }: CategoryDetailsHeroProps) {
   console.log(categoryDetails);
   return (
     <div className="relative border-b bg-linear-to-br from-primary/5 via-background to-primary/5 overflow-hidden">
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"></div>
-      <div className="absolute top-10 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-10 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-      <div className="container mx-auto px-4 py-16 relative z-10">
+      <div
+        className="absolute inset-0 bg-[url('/grid.svg')] opacity-5"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute top-10 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl pointer-events-none"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute bottom-10 left-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"
+        aria-hidden="true"
+      />
+      <div className="container mx-auto px-4 py-16 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="shrink-0 w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-linear-to-br from-primary/20 to-primary/5 p-6 shadow-lg">
             {categoryDetails?.image ? (
@@ -40,10 +49,11 @@ function CategoryDetailsHero({ categoryDetails }: CategoryDetailsHeroProps) {
             <p className="text-lg text-muted-foreground mb-6 max-w-2xl">
               {categoryDetails.description}
             </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
               <ChefHat className="h-4 w-4 text-primary" />
               <span className="text-sm font-semibold text-primary">
-                {categoryDetails.itemsCount} Items Available
+                {categoryDetails.itemsCount || 0}{" "}
+                {categoryDetails.itemsCount === 1 ? "Item" : "Items"} Available
               </span>
             </div>
           </div>

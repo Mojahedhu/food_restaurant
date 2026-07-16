@@ -4,7 +4,7 @@ import { CategoryFoodItemsSkeleton } from "./_components/categoryFoodItemsSkelet
 
 export default function CategoryFoodPageSkeleton() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <BreadcrumbSkeleton />
       <CategoryDetailsHeroSkeleton />
       <CategoryFoodItemsSkeleton />

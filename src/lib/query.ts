@@ -470,6 +470,11 @@ export const ALL_RESTAURANTS_QUERY = groq`
     isActive,
     minimumOrder,
     totalReviews,
+    categories[]->{
+      _id,
+      name,
+      "slug": slug.current
+    },
     "categoriesCount": count(categories),
     "foodItemsCount": count(foodItems)
   }

@@ -1,12 +1,25 @@
 "use server";
 
 import { assertAdmin, checkAdmin } from "@/lib/auth-guard";
-import { client, writeClient } from "@/sanity/lib/client";
-import { sanityFetch } from "@/sanity/lib/live";
 import { ProductSummary } from "@/types/admin";
-import { groq } from "next-sanity";
 import { revalidateTag } from "next/cache";
 import { z } from "zod";
+import { ServiceError } from "@/lib/services/errors";
+import {
+  fetchAllVarietiesService,
+  fetchAllSizesService,
+  fetchAllIngredientsService,
+  fetchAdminProductsPagedService,
+  fetchAllCategoriesService,
+  toggleProductAvailabilityService,
+  uploadProductImageService,
+  saveProductService,
+  createCategoryService,
+  createSizeService,
+  createVarietyService,
+  createIngredientService,
+  deleteProductService,
+} from "@/lib/services/admin.product.service";
 
 // Zod validation schemas
 const ToggleAvailabilitySchema = z.object({
@@ -95,13 +108,7 @@ interface FetchProductsParams {
 export async function fetchAllVarieties() {
   await checkAdmin();
   try {
-    const query = groq`*[_type == "foodVariety"] | order(name asc) { _id, name }`;
-    const { data } = await sanityFetch({
-      query,
-      params: {},
-      tags: ["varieties"],
-    });
-    return data as Array<{ _id: string; name: string }>;
+    return await fetchAllVarietiesService();
   } catch (error) {
     console.error("Failed to fetch varieties:", error);
     return [];
@@ -111,9 +118,7 @@ export async function fetchAllVarieties() {
 export async function fetchAllSizes() {
   await checkAdmin();
   try {
-    const query = groq`*[_type == "size"] | order(name asc) { _id, name }`;
-    const { data } = await sanityFetch({ query, params: {}, tags: ["sizes"] });
-    return data as Array<{ _id: string; name: string }>;
+    return await fetchAllSizesService();
   } catch (error) {
     console.error("Failed to fetch sizes:", error);
     return [];
@@ -123,20 +128,14 @@ export async function fetchAllSizes() {
 export async function fetchAllIngredients() {
   await checkAdmin();
   try {
-    const query = groq`*[_type == "ingredient"] | order(name asc) { _id, name }`;
-    const { data } = await sanityFetch({
-      query,
-      params: {},
-      tags: ["ingredients"],
-    });
-    return data as Array<{ _id: string; name: string }>;
+    return await fetchAllIngredientsService();
   } catch (error) {
     console.error("Failed to fetch ingredients:", error);
     return [];
   }
 }
-// ---- Fetch Products ---->
 
+// ---- Fetch Products ---->
 export async function fetchAdminProductsPaged({
   page,
   pageSize,
@@ -146,76 +145,7 @@ export async function fetchAdminProductsPaged({
 }: FetchProductsParams) {
   await checkAdmin();
   try {
-    const start = (page - 1) * pageSize;
-    const end = start + pageSize;
-
-    let filterClauses = `_type == "food"`;
-    const params: Record<string, string | number> = { start, end };
-
-    if (search.trim()) {
-      filterClauses += ` && name match $search`;
-      params.search = `*${search.trim()}*`;
-    }
-
-    if (category && category !== "all") {
-      filterClauses += ` && category._ref == $category`;
-      params.category = category;
-    }
-
-    if (available === "true") {
-      filterClauses += ` && available == true`;
-    } else if (available === "false") {
-      filterClauses += ` && available == false`;
-    }
-
-    const countQuery = groq`count(*[${filterClauses}])`;
-    const dataQuery = groq`
-      *[${filterClauses}] | order(name asc) {
-        _id,
-        _createdAt,
-        name,
-        price,
-        order,
-        available,
-        description,
-        preparationTime,
-        spiceLevel,
-        enableAllSizes,
-        featured,
-        category->{
-          _id,
-          name
-        },
-        images[] {
-          asset-> {
-            _id,
-            url
-          }
-        },
-        "sizes": sizes[].size->{
-          _id,
-          name
-        },
-        varieties[]->{
-          _id,
-          name
-        },
-        ingredients[]->{
-          _id,
-          name
-        }
-      }[$start...$end]
-    `;
-
-    const [{ data: totalItems }, { data: products }] = await Promise.all([
-      sanityFetch({ query: countQuery, params, tags: ["products"] }),
-      sanityFetch({ query: dataQuery, params, tags: ["products"] }),
-    ]);
-
-    return {
-      totalItems: totalItems as number,
-      products: products as ProductSummary[],
-    };
+    return await fetchAdminProductsPagedService({ page, pageSize, search, category, available });
   } catch (error) {
     console.error("Failed to fetch products on server:", error);
     return { totalItems: 0, products: [] };
@@ -225,13 +155,7 @@ export async function fetchAdminProductsPaged({
 export async function fetchAllCategories() {
   await checkAdmin();
   try {
-    const query = groq`*[_type == "category"] | order(name asc) { _id, name }`;
-    const { data: categories } = await sanityFetch({
-      query,
-      params: {},
-      tags: ["categories"],
-    });
-    return categories as Array<{ _id: string; name: string }>;
+    return await fetchAllCategoriesService();
   } catch (error) {
     console.error("Failed to fetch categories:", error);
     return [];
@@ -251,8 +175,9 @@ export async function toggleProductAvailability(
 
     const { productId, available } = parsed.data;
 
-    await client.patch(productId).set({ available }).commit();
+    await toggleProductAvailabilityService(productId, available);
 
+    // @ts-ignore
     revalidateTag("products", "max");
     return { success: true };
   } catch (error) {
@@ -275,13 +200,9 @@ export async function uploadProductImageAction(
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload asset to Sanity
-    const asset = await writeClient.assets.upload("image", buffer, {
-      filename: file.name,
-      contentType: file.type,
-    });
+    const assetId = await uploadProductImageService(buffer, file);
 
-    return { success: true, assetId: asset._id };
+    return { success: true, assetId };
   } catch (error) {
     console.error("Failed to upload image asset:", error);
     return { success: false, error: "Image upload failed" };
@@ -302,149 +223,15 @@ export async function saveProductAction(
       };
     }
 
-    const {
-      productId,
-      name,
-      price,
-      order,
-      categoryRefId,
-      description,
-      preparationTime,
-      spiceLevel,
-      enableAllSizes,
-      featured,
-      imageAssetIds,
-      sizeIds,
-      varietyIds,
-      ingredientIds,
-    } = parsed.data;
+    await saveProductService(parsed.data);
 
-    // A. Enforce Order uniqueness (Admin validation check)
-    const orderConflict = await client.fetch(
-      groq`*[_type == "food" && order == $order && !(_id in [$id, "drafts." + $id])][0]`,
-      { order, id: productId || "" },
-    );
-    if (orderConflict) {
-      return {
-        success: false,
-        error: `Display Order ${order} is already assigned to "${orderConflict.name}"`,
-      };
-    }
-
-    type DocumentFieldsValue =
-      | string
-      | number
-      | boolean
-      | "mild"
-      | "medium"
-      | "hot"
-      | "extra-Hot"
-      | null
-      | undefined
-      | string[]
-      | {
-          _type: string;
-          _ref: string;
-        }
-      | {
-          _type: string;
-          _key: string;
-          asset: {
-            _type: string;
-            _ref: string;
-          };
-        }[]
-      | {
-          _key: string;
-          size: {
-            _type: string;
-            _ref: string;
-          };
-        }[]
-      | {
-          _type: string;
-          _ref: string;
-          _key: string;
-        }[];
-
-    let updatedImages: DocumentFieldsValue | undefined = undefined;
-
-    if (imageAssetIds) {
-      const newImageObj = imageAssetIds.map((assetId, idx) => ({
-        _type: "image",
-        _key: `img_${assetId}_${idx}`,
-        asset: {
-          _type: "reference",
-          _ref: assetId,
-        },
-      }));
-
-      // No conditional check needed, directly assign the full ordered set
-      updatedImages = newImageObj;
-    }
-
-    // C. Format reference lists
-    const sizeObjects = sizeIds.map((sid) => ({
-      _key: `sz_${sid}`,
-      size: { _type: "reference", _ref: sid },
-    }));
-
-    const varietyRefs = varietyIds.map((vid) => ({
-      _type: "reference",
-      _ref: vid,
-      _key: `var_${vid}`,
-    }));
-
-    const ingredientRefs = ingredientIds.map((iid) => ({
-      _type: "reference",
-      _ref: iid,
-      _key: `ing_${iid}`,
-    }));
-
-    const documentFields: Record<string, DocumentFieldsValue> = {
-      name,
-      price,
-      order,
-      category: { _type: "reference", _ref: categoryRefId },
-      description,
-      preparationTime: preparationTime || null,
-      spiceLevel: spiceLevel === "none" ? null : spiceLevel,
-      enableAllSizes,
-      featured,
-      sizes: sizeObjects,
-      varieties: varietyRefs,
-      ingredients: ingredientRefs,
-    };
-
-    if (updatedImages) {
-      documentFields.images = updatedImages;
-    }
-
-    if (productId) {
-      // Update existing
-      await writeClient.patch(productId).set(documentFields).commit();
-    } else {
-      // Create new food item
-      // Auto-generate a clean slug from name
-      const slugValue = name
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-");
-
-      await writeClient.create({
-        _type: "food",
-        available: true,
-        slug: {
-          _type: "slug",
-          current: slugValue,
-        },
-        ...documentFields,
-      });
-    }
-
+    // @ts-ignore
     revalidateTag("products", "max");
     return { success: true };
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return { success: false, error: error.message };
+    }
     console.error("Failed to save product:", error);
     return { success: false, error: "Database save failed" };
   }
@@ -462,21 +249,10 @@ export async function createCategoryAction(
     }
 
     const { name, description } = parsed.data;
-    const slug = name
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-");
 
-    await client.create({
-      _type: "category",
-      name,
-      description: description || "",
-      slug: {
-        _type: "slug",
-        current: slug,
-      },
-    });
+    await createCategoryService(name, description);
 
+    // @ts-ignore
     revalidateTag("categories", "max");
     return { success: true };
   } catch (error) {
@@ -499,29 +275,16 @@ export async function createSizeAction(
         error: parsed.error.issues.map((i) => i.message).join(", "),
       };
     }
-    const { name, code, description, serveSize, order } = parsed.data;
-    // Check display order uniqueness
-    const orderConflict = await client.fetch(
-      groq`*[_type == "size" && order == $order][0]`,
-      { order },
-    );
-    if (orderConflict) {
-      return {
-        success: false,
-        error: `Display order ${order} is already assigned to "${orderConflict.name}"`,
-      };
-    }
-    await writeClient.create({
-      _type: "size",
-      name,
-      code,
-      description: description || "",
-      serveSize,
-      order,
-    });
+    
+    await createSizeService(parsed.data);
+    
+    // @ts-ignore
     revalidateTag("sizes", "max");
     return { success: true };
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return { success: false, error: error.message };
+    }
     console.error("Failed to create size:", error);
     return { success: false, error: "Failed to save size configuration." };
   }
@@ -540,26 +303,16 @@ export async function createVarietyAction(
         error: parsed.error.issues.map((i) => i.message).join(", "),
       };
     }
-    const { name, description, order } = parsed.data;
-    const orderConflict = await client.fetch(
-      groq`*[_type == "foodVariety" && order == $order][0]`,
-      { order },
-    );
-    if (orderConflict) {
-      return {
-        success: false,
-        error: `Display order ${order} is already assigned to "${orderConflict.name}"`,
-      };
-    }
-    await writeClient.create({
-      _type: "foodVariety",
-      name,
-      description: description || "",
-      order,
-    });
+    
+    await createVarietyService(parsed.data);
+    
+    // @ts-ignore
     revalidateTag("varieties", "max");
     return { success: true };
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return { success: false, error: error.message };
+    }
     console.error("Failed to create variety:", error);
     return { success: false, error: "Failed to save variety configuration." };
   }
@@ -578,26 +331,16 @@ export async function createIngredientAction(
         error: parsed.error.issues.map((i) => i.message).join(", "),
       };
     }
-    const { name, description, order } = parsed.data;
-    const orderConflict = await client.fetch(
-      groq`*[_type == "ingredient" && order == $order][0]`,
-      { order },
-    );
-    if (orderConflict) {
-      return {
-        success: false,
-        error: `Display order ${order} is already assigned to "${orderConflict.name}"`,
-      };
-    }
-    await writeClient.create({
-      _type: "ingredient",
-      name,
-      description: description || "",
-      order,
-    });
+    
+    await createIngredientService(parsed.data);
+    
+    // @ts-ignore
     revalidateTag("ingredients", "max");
     return { success: true };
   } catch (error) {
+    if (error instanceof ServiceError) {
+      return { success: false, error: error.message };
+    }
     console.error("Failed to create ingredient:", error);
     return {
       success: false,
@@ -622,10 +365,11 @@ export async function deleteProductAction(
   const { productId } = parsed.data;
 
   try {
-    // 3. Delete document from Sanity
-    await writeClient.delete(productId);
+    // 3. Call the service layer
+    await deleteProductService(productId);
 
     // 4. Force cache revalidation
+    // @ts-ignore
     revalidateTag("products", "max");
     return { success: true };
   } catch (error) {

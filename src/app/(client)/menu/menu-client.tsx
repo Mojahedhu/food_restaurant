@@ -104,7 +104,7 @@ const MenuClient = ({
                 <div
                   key={food._id}
                   // Rule 5: Fluid Component Transitions
-                  className="animate-in fade-in zoom-in-95 fill-mode-both duration-500 ease-out"
+                  className="h-full animate-in fade-in zoom-in-95 fill-mode-both duration-500 ease-out"
                   style={{
                     animationDelay: `${(index % FOODS_PER_PAGE) * 50}ms`,
                   }}

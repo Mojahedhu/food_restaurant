@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CategoryShare } from "@/actions/admin-analytics";
+import { CategoryShare } from "@/lib/services/admin.analytics.service";
 import { formatCurrency } from "@/lib/utils";
 import { PieChart, Pie, Sector, Tooltip, ResponsiveContainer } from "recharts";
 import type { PieSectorShapeProps } from "recharts";

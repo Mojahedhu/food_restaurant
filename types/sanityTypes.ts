@@ -186,7 +186,7 @@ export interface Restaurant {
   foodItems?: Array<FoodWithDetails>;
   categories?: Array<{
     _id: string;
-    title?: string;
+    name?: string;
     slug?: string;
     image?: SanityAsset;
   }>;

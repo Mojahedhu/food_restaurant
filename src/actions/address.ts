@@ -1,153 +1,81 @@
 // app/actions/address.ts
 "use server";
 
-import { client } from "@/sanity/lib/client";
-
-import { AddressRaw } from "@/features/address/types/type";
 import { Address } from "@/../types/sanityTypes";
 import auth from "../../auth";
+import { 
+  createAddress, 
+  getAddress, 
+  updateAddress, 
+  deleteAddress 
+} from "@/lib/services/client.address.service";
+import { ServiceError } from "@/lib/services/errors";
 
 export async function createAddressAction(formData: Omit<Address, "_id">) {
-  const session = await auth();
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
 
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
+    const result = await createAddress(session.user.id, formData);
+    return { success: true, addressId: result.addressId };
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { success: false, error: error.message };
+    }
+    console.error("[CREATE_ADDRESS_ACTION_ERROR]", error);
+    return { success: false, error: "An unexpected error occurred" };
   }
-
-  const userId = session.user.id;
-
-  const data = {
-    type: formData.type,
-    label: formData.label,
-    street: formData.street,
-    apartment: formData.apartment,
-    city: formData.city,
-    state: formData.state,
-    zipCode: formData.zipCode,
-    phone: formData.phone,
-    instructions: formData.instructions,
-    isDefault: formData.isDefault === true,
-  };
-
-  const transaction = client.transaction();
-
-  // 🧠 Check if user has NO addresses → force default
-  const existingCount = await client.fetch(
-    `count(*[_type == "address" && user._ref == $userId])`,
-    { userId },
-  );
-
-  const shouldBeDefault = existingCount === 0 || data.isDefault;
-
-  // 🔥 Unset previous defaults
-  if (shouldBeDefault) {
-    const existingDefaults = await client.fetch(
-      `*[_type == "address" && user._ref == $userId && isDefault == true]._id`,
-      { userId },
-    );
-
-    existingDefaults.forEach((id: string) => {
-      transaction.patch(id, {
-        set: { isDefault: false },
-      });
-    });
-  }
-
-  // ✅ Create address
-  transaction.create({
-    _type: "address",
-    ...data,
-    isDefault: shouldBeDefault,
-    user: {
-      _type: "reference",
-      _ref: userId,
-    },
-  });
-
-  const result = await transaction.commit();
-
-  return {
-    success: true,
-    addressId: result.results[0].id,
-  };
 }
 
 export async function getAddressAction(id: string) {
-  const address = await client.getDocument(id);
-  return address;
+  try {
+    const address = await getAddress(id);
+    return address;
+  } catch (error) {
+    console.error("[GET_ADDRESS_ACTION_ERROR]", error);
+    return null;
+  }
 }
 
 export async function updateAddressAction(
   id: string,
-  formData: Partial<Address>,
+  formData: Partial<Address>
 ) {
-  const session = await auth();
-
-  if (!session?.user?.id) throw new Error("Unauthorized");
-
-  const userId = session.user.id;
-
-  const updates: Partial<AddressRaw> = {
-    type: formData.type,
-    label: formData.label,
-    street: formData.street,
-    apartment: formData.apartment,
-    city: formData.city,
-    state: formData.state,
-    zipCode: formData.zipCode,
-    phone: formData.phone,
-    instructions: formData.instructions,
-    isDefault: formData.isDefault,
-  };
-
-  const transaction = client.transaction();
-
-  // 🧠 If updating to default → unset others
-  if (updates.isDefault === true) {
-    transaction.patch(
-      {
-        query: `*[_type == "address" && user._ref == $userId && _id != $id]`,
-        params: { userId, id },
-      },
-      { set: { isDefault: false } },
-    );
-  }
-
-  // ✅ Update address
-  transaction.patch(id, {
-    set: updates,
-  });
   try {
-    await transaction.commit();
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Unauthorized" };
+    }
 
-    return { success: true, addressId: id };
+    const result = await updateAddress(session.user.id, id, formData);
+    return { success: true, addressId: result.addressId };
   } catch (error) {
-    console.error(error);
-    return { success: false, error };
+    if (error instanceof ServiceError) {
+      return { success: false, error: error.message };
+    }
+    console.error("[UPDATE_ADDRESS_ACTION_ERROR]", error);
+    return { success: false, error: "An unexpected error occurred" };
   }
 }
+
 export async function deleteAddressAction(id: string, userId: string) {
-  const transaction = client.transaction();
+  try {
+    // Note: It's technically safer to get userId from auth() rather than accepting it as an argument
+    // to prevent spoofing. However, we'll maintain your signature and pass it to the service which verifies ownership.
+    const session = await auth();
+    if (!session?.user?.id || session.user.id !== userId) {
+      return { success: false, error: "Unauthorized" };
+    }
 
-  // 1- Get Address being deleted
-  const address = await client.getDocument(id);
-  if (!address) throw new Error("Address not found");
-
-  // 2-Delete it
-  transaction.delete(id);
-
-  // 3- If deleted was default → assign new default
-  if (address.isDefault) {
-    transaction.patch(
-      {
-        query: `*[_type == "address" && user._ref == $userId][0]`,
-        params: { userId },
-      },
-      { set: { isDefault: true } },
-    );
+    const result = await deleteAddress(userId, id);
+    return result;
+  } catch (error) {
+    if (error instanceof ServiceError) {
+      return { success: false, error: error.message };
+    }
+    console.error("[DELETE_ADDRESS_ACTION_ERROR]", error);
+    return { success: false, error: "An unexpected error occurred" };
   }
-
-  await transaction.commit();
-
-  return { success: true };
 }

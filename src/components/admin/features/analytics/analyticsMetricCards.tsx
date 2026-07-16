@@ -8,7 +8,7 @@ import {
   DollarSign,
   CheckCircle2,
 } from "lucide-react";
-import { AnalyticsKPIs } from "@/actions/admin-analytics";
+import { AnalyticsKPIs } from "@/lib/services/admin.analytics.service";
 
 interface AnalyticsMetricCardsProps {
   kpis: AnalyticsKPIs;

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { SalesPoint } from "@/actions/admin-analytics";
+
 import { formatCurrency } from "@/lib/utils";
 import {
   Area,
@@ -19,6 +19,7 @@ import {
   YAxis,
   CartesianGrid,
 } from "recharts";
+import { SalesPoint } from "@/lib/services/admin.analytics.service";
 
 interface InteractiveSalesChartProps {
   data: SalesPoint[];
