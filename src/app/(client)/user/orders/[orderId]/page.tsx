@@ -1,7 +1,10 @@
-import { client } from "@/sanity/lib/client";
-import auth from "../../../../../../auth";
+import auth from "@/../auth";
 import { notFound } from "next/navigation";
 import OrderDetailsClientPage from "./OrderDetailsClientPage";
+import {
+  fetchActiveOrderStatuses,
+  fetchOrderDetails,
+} from "@/lib/services/user.orders.service";
 
 interface OrderDetailsPageProps {
   params: Promise<{ orderId: string }>;
@@ -13,19 +16,17 @@ const OrderDetailsPage = async ({ params }: OrderDetailsPageProps) => {
 
   const userId = session?.user?.id;
 
-  const order = await client.fetch(`*[_type == "order" && _id == $id][0]`, {
-    id: orderId,
-  });
+  const order = await fetchOrderDetails(orderId);
 
   // ❌ Not found
-  if (!order) return notFound();
+  if (!order || !order?.user) return notFound();
 
   // ❌ Not owner
   if (order.user._ref !== userId && session?.user?.role !== "admin") {
     return notFound();
   }
-
-  return <OrderDetailsClientPage orderId={orderId} initialOrder={order} />;
+  const allStatuses = await fetchActiveOrderStatuses();
+  return <OrderDetailsClientPage order={order} allStatuses={allStatuses} />;
 };
 
 export default OrderDetailsPage;

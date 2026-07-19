@@ -266,12 +266,7 @@ export type Order = {
   originalTotal?: number;
   paymentMethod?: "online" | "cod";
   paymentStatus?: "pending" | "paid" | "failed";
-  status?: {
-    _ref: string;
-    _type: "reference";
-    _weak?: boolean;
-    [internalGroqTypeReferenceTo]?: "orderStatus";
-  };
+  status?: OrderSummary["status"];
   estimatedDeliveryTime?: string;
   notes?: string;
   StripeSessionId?: string;
@@ -292,6 +287,36 @@ export type OrderStatus = {
   order?: number;
   isDefault?: boolean;
   isActive?: boolean;
+};
+
+export type OrderSummary = {
+  _id: string;
+  orderNumber?: string;
+  _createdAt: string;
+  total: number;
+  paymentStatus: string;
+  paymentMethod: string;
+  status?: {
+    _id: string;
+
+    title: string;
+    value: {
+      current: string;
+    };
+    color: string;
+    order: number;
+    description: string;
+  };
+
+  items?: {
+    foodId: string;
+    image: SanityAsset;
+    name: string;
+    price: number;
+    quantity: number;
+    size?: string;
+    variety?: string;
+  }[];
 };
 
 // =========================================

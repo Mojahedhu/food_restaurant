@@ -1,10 +1,11 @@
 import { client } from "@/sanity/lib/client";
 import { redirect } from "next/navigation";
 import OrderSuccessPageClient from "./orderSuccessPageClient";
-import { Order } from "@/../sanity.types";
+
 import { stripe } from "@/lib/stripe";
 import auth from "@/../auth";
 import { cookies } from "next/headers";
+import { Order } from "@/../types/sanityTypes";
 
 interface OrderSuccessPageProps {
   searchParams: Promise<{

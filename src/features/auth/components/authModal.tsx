@@ -31,7 +31,7 @@ const AuthModal = ({ children }: AuthModalProps) => {
       onClick={() => router.back()}
     >
       <div
-        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-background shadow-2xl"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl border border-border bg-background shadow-2xl animate-modal-enter"
         onClick={(event) => event.stopPropagation()}
       >
         <Button

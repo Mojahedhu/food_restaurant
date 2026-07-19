@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ShoppingBag } from "lucide-react";
-import { Order } from "@/../sanity.types";
+import { Order } from "@/../types/sanityTypes";
 
 interface OrderSummaryCardProps {
   order: Order;

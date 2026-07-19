@@ -1,34 +1,57 @@
-import auth from "../../../../../auth";
+import auth from "@/../auth";
 import { client } from "@/sanity/lib/client";
-import { Order } from "../../../../../types/sanityTypes";
+import { Order } from "@/../types/sanityTypes";
 import OrdersClientPage from "./ordersClientPage";
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import {
+  fetchActiveOrderStatuses,
+  fetchOrderStats,
+  fetchUserOrders,
+} from "@/lib/services/user.orders.service";
 
-const OrdersPage = async () => {
+export const metadata: Metadata = {
+  title: "Order History",
+  description: "View and manage all your past and active orders.",
+};
+
+interface OrdersPageProps {
+  searchParams: Promise<{ page?: string; search?: string; status?: string }>;
+}
+
+async function OrdersPage({ searchParams }: OrdersPageProps) {
   const session = await auth();
-  const userId = session?.user?.id;
-  const role = session?.user?.role;
-  const LIMIT = 10;
-  const isAdmin = role === "admin";
-  const query = isAdmin
-    ? `*[_type == "order"] | order(userName asc, _createdAt desc) [0...${LIMIT}]`
-    : `*[_type == "order" && user._ref == $userId] | order(_createdAt desc) [0...${LIMIT}]`;
-  const orders = isAdmin
-    ? await client.fetch<Order[]>(query, { LIMIT })
-    : await client.fetch<Order[]>(query, { userId, LIMIT });
-  const totalQuery = isAdmin
-    ? `*[_type == "order"]`
-    : `*[_type == "order" && user._ref == $userId]`;
-  const totalOrders = await client.fetch<number>(`count(${totalQuery})`, {
-    userId,
-  });
+
+  if (!session?.user?.id) {
+    redirect("/sign-in");
+  }
+
+  const userId = session.user.id;
+  const isAdmin = session.user.role === "admin";
+  const awaitedParams = await searchParams;
+  const page = Number(awaitedParams.page) || 1;
+  const pageSize = 8;
+  const search = awaitedParams.search || "";
+  const status = awaitedParams.status || "all";
+  const [{ orders, totalItems }, stats, allStatuses] = await Promise.all([
+    fetchUserOrders(userId, isAdmin, page, pageSize, search, status),
+    fetchOrderStats(userId, isAdmin),
+    fetchActiveOrderStatuses(),
+  ]);
+
   return (
     <OrdersClientPage
-      userId={userId}
+      orders={orders}
+      totalItems={totalItems}
+      stats={stats}
       isAdmin={isAdmin}
-      initialOrders={orders}
-      totalOrders={totalOrders}
+      page={page}
+      pageSize={pageSize}
+      search={search}
+      statusFilter={status}
+      allStatuses={allStatuses}
     />
   );
-};
+}
 
 export default OrdersPage;

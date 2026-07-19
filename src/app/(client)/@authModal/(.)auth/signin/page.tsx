@@ -6,13 +6,11 @@ import { RouteTransition } from "@/components/common/route-transition";
 
 function SignInPage() {
   return (
-    <RouteTransition className="animate-modal-enter">
-      <AuthModal>
-        <Suspense fallback={<Fallback />}>
-          <SignInForm variant="modal" />
-        </Suspense>
-      </AuthModal>
-    </RouteTransition>
+    <AuthModal>
+      <Suspense fallback={<Fallback />}>
+        <SignInForm variant="modal" />
+      </Suspense>
+    </AuthModal>
   );
 }
 

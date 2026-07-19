@@ -1,30 +1,37 @@
 import { client } from "@/sanity/lib/client";
-import auth from "../../../../../auth";
-import { Order, User } from "../../../../../types/sanityTypes";
+import auth from "@/../auth";
+import { Order, User } from "@/../types/sanityTypes";
 import DashboardClientPage from "./dashboardClientPage";
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { fetchUserDashboardOrders } from "@/lib/services/user.dashboard.service";
 
-const UserDashboardPage = async () => {
+export const metadata: Metadata = {
+  title: "Account Dashboard",
+  description:
+    "Manage your recent orders, saved addresses, and profile settings.",
+};
+
+async function UserDashboardPage() {
   const session = await auth();
+
+  if (!session?.user?.id) {
+    redirect("/sign-in");
+  }
+
   const userId = session?.user?.id;
-  const role = session?.user?.role;
-  const isAdmin = role === "admin";
+  const isAdmin = session?.user?.role === "admin";
 
-  const query = isAdmin
-    ? `*[_type == "order"] | order(_createdAt desc) [0...5]`
-    : `*[_type == "order" && user._ref == $userId] | order(_createdAt desc) [0...5]`;
-
-  const initialOrders = isAdmin
-    ? await client.fetch<Order[]>(query)
-    : await client.fetch<Order[]>(query, { userId });
-
+  // Clean Server-Layer Pattern: Data fetching logic is delegated to the service layer
+  const initialOrders = await fetchUserDashboardOrders(userId, isAdmin);
   return (
     <DashboardClientPage
-      userId={userId!}
+      userId={userId}
       initialOrders={initialOrders}
       isAdmin={isAdmin}
       user={session?.user as User}
     />
   );
-};
+}
 
 export default UserDashboardPage;
