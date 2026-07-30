@@ -1,4 +1,5 @@
 import auth from "@/../auth";
+import { PageTransition } from "@/components/common/page-transition";
 import { redirect } from "next/navigation";
 
 export default async function RootLayout({
@@ -10,5 +11,5 @@ export default async function RootLayout({
     redirect("/");
   }
 
-  return children;
+  return <PageTransition>{children}</PageTransition>;
 }

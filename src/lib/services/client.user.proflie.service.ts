@@ -1,13 +1,8 @@
-import auth from "@/../auth";
-import ProfileClientPage from "./profileClientPage";
-import { client } from "@/sanity/lib/client";
 import { User } from "@/../types/sanityTypes";
+import { sanityFetch } from "@/sanity/lib/live";
 
-const ProfilePage = async () => {
-  const session = await auth();
-  const userId = session?.user?.id;
-  const user = await client.fetch<User>(
-    `*[_type == "user" && _id == $userId][0] {
+export async function getUserProfile(userId: string): Promise<User[]> {
+  const userQuery = `*[_type == "user" && _id == $userId][0] {
         _id,
         name,
         email,
@@ -35,13 +30,10 @@ const ProfilePage = async () => {
         _rev,
         provider,
         createdAt,
-      }`,
-    {
-      userId,
-    },
-  );
-
-  return <ProfileClientPage user={user} />;
-};
-
-export default ProfilePage;
+      }`;
+  const user = await sanityFetch({
+    query: userQuery,
+    params: { userId: userId },
+  });
+  return user?.data as User[];
+}

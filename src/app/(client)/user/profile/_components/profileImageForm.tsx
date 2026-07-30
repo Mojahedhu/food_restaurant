@@ -5,7 +5,7 @@ import { Link2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { User } from "../../../../../types/sanityTypes";
+import { User } from "@/../types/sanityTypes";
 
 interface ProfileImageFormProps {
   user: User;

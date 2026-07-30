@@ -1,4 +1,5 @@
 import Header from "@/components/common/header";
+import { PageTransition } from "@/components/common/page-transition";
 import Footer from "@/components/home/footer";
 
 interface ClientLayoutProps {
@@ -12,7 +13,9 @@ const ClientLayout = ({ children, authModal }: ClientLayoutProps) => {
       <Header />
 
       {authModal}
-      <main>{children}</main>
+      <main>
+        <PageTransition>{children}</PageTransition>
+      </main>
       <Footer />
     </div>
   );

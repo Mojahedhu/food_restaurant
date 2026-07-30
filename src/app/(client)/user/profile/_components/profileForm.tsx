@@ -9,11 +9,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 
-import { User } from "../../../../../types/sanityTypes";
+import { User } from "@/../types/sanityTypes";
 
 import { getUserImage } from "@/lib/utils";
 import ProfileImageForm from "./profileImageForm";
-import { UpdateProfilePayload } from "./action";
+import { UpdateProfilePayload } from "../../../../../actions/client-user-profile";
 import { Loader2 } from "lucide-react";
 
 interface ProfileFormProps {

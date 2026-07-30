@@ -5,6 +5,7 @@ import UserNavButton from "@/features/user/components/userNavButton";
 import UserSignOutButton from "@/features/user/components/userSignOutButton";
 import auth from "@/../auth";
 import { redirect } from "next/navigation";
+import { PageTransition } from "@/components/common/page-transition";
 
 async function UserLayout({ children }: { children: React.ReactNode }) {
   // Zero-trust authentication guard
@@ -31,9 +32,10 @@ async function UserLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Main content wrapper */}
-      <div className="max-w-7xl mx-auto px-4 py-8 animate-in fade-in duration-500">
+
+      <PageTransition className="max-w-7xl mx-auto px-4 py-8">
         {children}
-      </div>
+      </PageTransition>
     </div>
   );
 }

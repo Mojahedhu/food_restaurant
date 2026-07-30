@@ -1,6 +1,5 @@
-import React from "react";
 import AddressesPage from "./addressPageClient";
-import auth from "../../../../../auth";
+import auth from "@/../auth";
 
 const AddressPage = async () => {
   const session = await auth();

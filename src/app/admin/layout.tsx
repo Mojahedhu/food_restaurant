@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Sidebar } from "@/components/admin/layout/sidebar";
 import { Header } from "@/components/admin/layout/header";
+import { PageTransition } from "@/components/common/page-transition";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
@@ -16,7 +17,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
         {/* Scrollable Page Content with Smart Animation */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 transition-colors duration-200">
-          <div className="mx-auto max-w-7xl">{children}</div>
+          <PageTransition className="mx-auto max-w-7xl">
+            {children}
+          </PageTransition>
         </main>
       </div>
     </div>

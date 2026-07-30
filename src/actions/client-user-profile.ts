@@ -8,7 +8,7 @@
 // 1. app/(client)/user/profile/actions.ts
 // =====================================================
 import { client } from "@/sanity/lib/client";
-import { UserImage } from "../../../../../sanity.types";
+import { UserImage } from "@/../sanity.types";
 
 export interface UpdateProfilePayload {
   _id: string;
