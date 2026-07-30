@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/provider/auth-provider";
 import { Toaster } from "sonner";
 import { SanityLive } from "@/sanity/lib/live";
+import { CodeXml } from "lucide-react";
+import GitHubAnchor from "@/components/common/gitHubAnchor";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -45,6 +47,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${montserrat.variable} antialiased font-sans`}
       >
         <AuthProvider>{children}</AuthProvider>
+        <GitHubAnchor />
         <SanityLive />
         <Toaster
           position="top-right"

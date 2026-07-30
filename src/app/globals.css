@@ -225,15 +225,6 @@
   animation: shimmer 1.5s infinite;
 }
 
-/* Page and Modal animation   */
-/* Add these to your theme */
-/* @theme {
-  --animate-page-enter: page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  --animate-modal-enter: modal-enter 0.25s cubic-bezier(0.22, 1, 0.36, 1)
-    forwards;
-} */
-
-/* Replace the @theme block with these standard classes */
 .animate-page-enter {
   animation: page-enter 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
@@ -261,5 +252,32 @@
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
+@keyframes bounce-subtle {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translate(-100%);
+  }
+  100% {
+    transform: translate(100%);
   }
 }
