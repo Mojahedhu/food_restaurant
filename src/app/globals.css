@@ -178,6 +178,7 @@
 @theme {
   --animate-status-pulse: status-pulse 2s ease-out infinite;
   --animate-step-in: step-in 2s cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-shimmer: shimmer 1.5s linear infinite;
 }
 
 @keyframes status-pulse {
@@ -269,15 +270,11 @@
   }
 }
 
-.animate-shimmer {
-  animation: shimmer 1.5s infinite;
-}
-
 @keyframes shimmer {
   0% {
-    transform: translate(-100%);
+    transform: translateX(-100%);
   }
   100% {
-    transform: translate(100%);
+    transform: translateX(100%);
   }
 }
